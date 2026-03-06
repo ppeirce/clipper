@@ -1,0 +1,831 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0535AAB1A91D0097C14AC8D1 /* ClipperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5A58FA24699EC9DBA9D85F /* ClipperApp.swift */; };
+		0A77FC0E68AE0F4D7FF8A2C7 /* AppLaunchOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA843EE7C10C45AECB5C00A8 /* AppLaunchOptions.swift */; };
+		0F5C176BE82BD85CF383407B /* RuntimeTraceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28DB18C5DA73764A9DCA4A1C /* RuntimeTraceStore.swift */; };
+		13F490C20F89A1C57140AB93 /* EditorReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397DA16906EEEEA7A4F273FC /* EditorReducer.swift */; };
+		147AE093CF1DCB2B24F7D8F7 /* TimecodeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A277C475B5CF59DA93D6FA /* TimecodeFormatter.swift */; };
+		1AD41E7D9F91E67DAE623DFA /* RibbonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9993D0268F8CDF4F6A39D180 /* RibbonView.swift */; };
+		1DEF8220D553E7FE3C3A9705 /* KeyboardShortcutInterpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71687DABF36070BDFA40C4A0 /* KeyboardShortcutInterpreter.swift */; };
+		2AF51C52C2DA7F84ECDB0E4D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA6884DC7D15ED87B036807 /* ContentView.swift */; };
+		2E188C7798B07A22F51F9DB9 /* CMTime+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF2EE1188A6043366C86169 /* CMTime+Helpers.swift */; };
+		2ECA709B78E938C383302737 /* ClipperKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8415649E0BC04D52612D6A9 /* ClipperKit.framework */; };
+		3353A4B2C53325C2EED454FC /* TimelineProjectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A35DC73F19E48D801A437E5 /* TimelineProjectorTests.swift */; };
+		38BCD1A99C526A2AA6A2CB61 /* ClipperKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8415649E0BC04D52612D6A9 /* ClipperKit.framework */; };
+		3A0FC3A9DF9E37CB1858548D /* EditorWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BACEDCBDB2BF977577FA40F /* EditorWorkflowTests.swift */; };
+		3AEADA7CA1351FF4ACB122EB /* FFmpegClipExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3092BCE1CA539696660D68B /* FFmpegClipExporter.swift */; };
+		4552F1238E5D19C1B78A2F47 /* TimelineProjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137EACF51E5289F88B1C025F /* TimelineProjector.swift */; };
+		6AF961A6DB17FB9162371B28 /* ExportPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3782CE15A7DAFD9B5DFDC09F /* ExportPreset.swift */; };
+		751945D1356E944C9EAE0490 /* OSLog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E18D8913B0BB80AA49972F1 /* OSLog.framework */; };
+		776E07A8CF5EA4972488254E /* ClipperKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B8415649E0BC04D52612D6A9 /* ClipperKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7F60ACDD1D85523B5E7B7CFA /* FFmpegCommandBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C856C65F1F8DBDDB2A03ADA6 /* FFmpegCommandBuilder.swift */; };
+		813AFCB0B3FF81CA740F72AD /* ClipperKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B8415649E0BC04D52612D6A9 /* ClipperKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8151DD0E1C6424904C8BB818 /* ClipExportPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D258150E187874B51DCE63 /* ClipExportPlanner.swift */; };
+		944BD76BD210019989787A6F /* ClipSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8F08673627C2CD8C431BEC /* ClipSegment.swift */; };
+		98D19B64C9D5052CE4415285 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1723ED4A6AA003C9B628CE18 /* CoreMedia.framework */; };
+		A2FDFC6C0EF133207CA3A8FD /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9453B0114C90BD393747BD24 /* AVKit.framework */; };
+		A6FC12AC3E444E7675F55FB8 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC0D040A81E2F280AB0160FC /* AppKit.framework */; };
+		AB847A5E0EC755D840136697 /* PlayerSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A43E68413872062F9127C1 /* PlayerSurfaceView.swift */; };
+		ABD2419D3EC9728B4B7B7428 /* FFmpegCommandBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6986C912D7CCF30719411BE /* FFmpegCommandBuilderTests.swift */; };
+		ACC4C8173C3AA4C9E1496615 /* RuntimeTraceStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBCC915836CA09FC375B6B33 /* RuntimeTraceStoreTests.swift */; };
+		C638137602A220B56139CA7E /* ClipperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE4A30A0892D90E948B30A1 /* ClipperViewModel.swift */; };
+		D1CCEC5AE490207D34E12436 /* AVPlayerPlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC730E467C28CDEE03EC98AF /* AVPlayerPlaybackController.swift */; };
+		D3A6F7BFF2FC26C45A11251D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96735AF8B6B8F5716AE12A14 /* SwiftUI.framework */; };
+		D801C218BB126DB86EF42C7F /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1F86FC25F52DB9324454E3 /* AppLogger.swift */; };
+		E262432713401BB18F5E3345 /* EditorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 792A438FE9260031FEE5EE34 /* EditorState.swift */; };
+		E3C3EA86926FC1686265CC42 /* EditorReducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76257218103C8D9FBA2FD139 /* EditorReducerTests.swift */; };
+		EC2A588947B017CBBA4FBDD8 /* KeyboardShortcutInterpreterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DA49EB78A93E1ED70870B0 /* KeyboardShortcutInterpreterTests.swift */; };
+		EFC48A1FA9A8B530159B900D /* KeyboardCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D050296FB818AE471CE431B /* KeyboardCaptureView.swift */; };
+		F07BDDD67B121650FC406828 /* ClipperUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6B15F499CC72B9DB2A6DA3 /* ClipperUITests.swift */; };
+		F7F939D1D4383C9C7C1EAB2B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D97F576A5D2932DD58F02A /* AVFoundation.framework */; };
+		FA9ADCE93F8B8666C8CF8F45 /* FFmpegClipExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD36DC1BABA2717EC34EF8C8 /* FFmpegClipExporterTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0795F5125C7B00C2CAF433F4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A49D39E2C2AAF32366A62E7C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9C44E51FB7227E5B285648C2;
+			remoteInfo = Clipper;
+		};
+		2D1BA3E4CFEE9AF5ABDC655B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A49D39E2C2AAF32366A62E7C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EC11476241663F95AA46C955;
+			remoteInfo = ClipperKit;
+		};
+		500E6606698FD0BD83C46F1A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A49D39E2C2AAF32366A62E7C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EC11476241663F95AA46C955;
+			remoteInfo = ClipperKit;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		99B6106309EB284C4F7E921B /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				813AFCB0B3FF81CA740F72AD /* ClipperKit.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F26553608FDAC5D5B624C837 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				776E07A8CF5EA4972488254E /* ClipperKit.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		02A43E68413872062F9127C1 /* PlayerSurfaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerSurfaceView.swift; sourceTree = "<group>"; };
+		07DA49EB78A93E1ED70870B0 /* KeyboardShortcutInterpreterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutInterpreterTests.swift; sourceTree = "<group>"; };
+		0BE4A30A0892D90E948B30A1 /* ClipperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipperViewModel.swift; sourceTree = "<group>"; };
+		116195CBBDC42ACA712F1096 /* Clipper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clipper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		137EACF51E5289F88B1C025F /* TimelineProjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineProjector.swift; sourceTree = "<group>"; };
+		1723ED4A6AA003C9B628CE18 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		1A8F08673627C2CD8C431BEC /* ClipSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipSegment.swift; sourceTree = "<group>"; };
+		28DB18C5DA73764A9DCA4A1C /* RuntimeTraceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeTraceStore.swift; sourceTree = "<group>"; };
+		3782CE15A7DAFD9B5DFDC09F /* ExportPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportPreset.swift; sourceTree = "<group>"; };
+		397DA16906EEEEA7A4F273FC /* EditorReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorReducer.swift; sourceTree = "<group>"; };
+		4D5A58FA24699EC9DBA9D85F /* ClipperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipperApp.swift; sourceTree = "<group>"; };
+		71687DABF36070BDFA40C4A0 /* KeyboardShortcutInterpreter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutInterpreter.swift; sourceTree = "<group>"; };
+		76257218103C8D9FBA2FD139 /* EditorReducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorReducerTests.swift; sourceTree = "<group>"; };
+		77D258150E187874B51DCE63 /* ClipExportPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipExportPlanner.swift; sourceTree = "<group>"; };
+		792A438FE9260031FEE5EE34 /* EditorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorState.swift; sourceTree = "<group>"; };
+		7D050296FB818AE471CE431B /* KeyboardCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardCaptureView.swift; sourceTree = "<group>"; };
+		92D97F576A5D2932DD58F02A /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		93A277C475B5CF59DA93D6FA /* TimecodeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimecodeFormatter.swift; sourceTree = "<group>"; };
+		9453B0114C90BD393747BD24 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
+		96735AF8B6B8F5716AE12A14 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		9993D0268F8CDF4F6A39D180 /* RibbonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RibbonView.swift; sourceTree = "<group>"; };
+		9A35DC73F19E48D801A437E5 /* TimelineProjectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineProjectorTests.swift; sourceTree = "<group>"; };
+		9BACEDCBDB2BF977577FA40F /* EditorWorkflowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorWorkflowTests.swift; sourceTree = "<group>"; };
+		9E18D8913B0BB80AA49972F1 /* OSLog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OSLog.framework; path = System/Library/Frameworks/OSLog.framework; sourceTree = SDKROOT; };
+		A09C6C5DE34027686EB2D8C4 /* ClipperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClipperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A6986C912D7CCF30719411BE /* FFmpegCommandBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegCommandBuilderTests.swift; sourceTree = "<group>"; };
+		AB6B15F499CC72B9DB2A6DA3 /* ClipperUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipperUITests.swift; sourceTree = "<group>"; };
+		B8415649E0BC04D52612D6A9 /* ClipperKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ClipperKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD1F86FC25F52DB9324454E3 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
+		BD36DC1BABA2717EC34EF8C8 /* FFmpegClipExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegClipExporterTests.swift; sourceTree = "<group>"; };
+		C856C65F1F8DBDDB2A03ADA6 /* FFmpegCommandBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegCommandBuilder.swift; sourceTree = "<group>"; };
+		CC0D040A81E2F280AB0160FC /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		D075FE0A7D25A3797EE5B13D /* ClipperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClipperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3092BCE1CA539696660D68B /* FFmpegClipExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegClipExporter.swift; sourceTree = "<group>"; };
+		DA843EE7C10C45AECB5C00A8 /* AppLaunchOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchOptions.swift; sourceTree = "<group>"; };
+		DC730E467C28CDEE03EC98AF /* AVPlayerPlaybackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlayerPlaybackController.swift; sourceTree = "<group>"; };
+		DCA6884DC7D15ED87B036807 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		EBCC915836CA09FC375B6B33 /* RuntimeTraceStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeTraceStoreTests.swift; sourceTree = "<group>"; };
+		FDF2EE1188A6043366C86169 /* CMTime+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CMTime+Helpers.swift"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		04BA5041A88F7489EE4BEFE8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2ECA709B78E938C383302737 /* ClipperKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7D6D6BCB86814582A8E2D8E7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				38BCD1A99C526A2AA6A2CB61 /* ClipperKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B16EC0A30D6873248C501833 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A6FC12AC3E444E7675F55FB8 /* AppKit.framework in Frameworks */,
+				F7F939D1D4383C9C7C1EAB2B /* AVFoundation.framework in Frameworks */,
+				A2FDFC6C0EF133207CA3A8FD /* AVKit.framework in Frameworks */,
+				98D19B64C9D5052CE4415285 /* CoreMedia.framework in Frameworks */,
+				751945D1356E944C9EAE0490 /* OSLog.framework in Frameworks */,
+				D3A6F7BFF2FC26C45A11251D /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1E662B0D85F4821EB5211778 /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				77D258150E187874B51DCE63 /* ClipExportPlanner.swift */,
+				3782CE15A7DAFD9B5DFDC09F /* ExportPreset.swift */,
+				D3092BCE1CA539696660D68B /* FFmpegClipExporter.swift */,
+				C856C65F1F8DBDDB2A03ADA6 /* FFmpegCommandBuilder.swift */,
+			);
+			path = Export;
+			sourceTree = "<group>";
+		};
+		314C2F9DF99D3E8898B0B5E6 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				DA843EE7C10C45AECB5C00A8 /* AppLaunchOptions.swift */,
+				0BE4A30A0892D90E948B30A1 /* ClipperViewModel.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		3228559B29A2C5320662B484 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				DCA6884DC7D15ED87B036807 /* ContentView.swift */,
+				7D050296FB818AE471CE431B /* KeyboardCaptureView.swift */,
+				02A43E68413872062F9127C1 /* PlayerSurfaceView.swift */,
+				9993D0268F8CDF4F6A39D180 /* RibbonView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		3E11AE0C28718BFEEEC82766 /* ClipperUITests */ = {
+			isa = PBXGroup;
+			children = (
+				AB6B15F499CC72B9DB2A6DA3 /* ClipperUITests.swift */,
+			);
+			path = ClipperUITests;
+			sourceTree = "<group>";
+		};
+		4B4E62321BC54DB9DB2D1D16 = {
+			isa = PBXGroup;
+			children = (
+				D0D24F555886C14DB3520409 /* Clipper */,
+				E0648DF31535E0F6C9C6D6BD /* ClipperKit */,
+				4D9440184FE068F8C4421B4E /* ClipperTests */,
+				3E11AE0C28718BFEEEC82766 /* ClipperUITests */,
+				95C395496B2526299D32A3F6 /* Frameworks */,
+				711FA19A5B7046AC0F500A51 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4D9440184FE068F8C4421B4E /* ClipperTests */ = {
+			isa = PBXGroup;
+			children = (
+				76257218103C8D9FBA2FD139 /* EditorReducerTests.swift */,
+				9BACEDCBDB2BF977577FA40F /* EditorWorkflowTests.swift */,
+				BD36DC1BABA2717EC34EF8C8 /* FFmpegClipExporterTests.swift */,
+				A6986C912D7CCF30719411BE /* FFmpegCommandBuilderTests.swift */,
+				07DA49EB78A93E1ED70870B0 /* KeyboardShortcutInterpreterTests.swift */,
+				EBCC915836CA09FC375B6B33 /* RuntimeTraceStoreTests.swift */,
+				9A35DC73F19E48D801A437E5 /* TimelineProjectorTests.swift */,
+			);
+			path = ClipperTests;
+			sourceTree = "<group>";
+		};
+		711FA19A5B7046AC0F500A51 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				116195CBBDC42ACA712F1096 /* Clipper.app */,
+				B8415649E0BC04D52612D6A9 /* ClipperKit.framework */,
+				D075FE0A7D25A3797EE5B13D /* ClipperTests.xctest */,
+				A09C6C5DE34027686EB2D8C4 /* ClipperUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7C95FFB17E1D3A99E55633C5 /* Playback */ = {
+			isa = PBXGroup;
+			children = (
+				DC730E467C28CDEE03EC98AF /* AVPlayerPlaybackController.swift */,
+			);
+			path = Playback;
+			sourceTree = "<group>";
+		};
+		95C395496B2526299D32A3F6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CC0D040A81E2F280AB0160FC /* AppKit.framework */,
+				92D97F576A5D2932DD58F02A /* AVFoundation.framework */,
+				9453B0114C90BD393747BD24 /* AVKit.framework */,
+				1723ED4A6AA003C9B628CE18 /* CoreMedia.framework */,
+				9E18D8913B0BB80AA49972F1 /* OSLog.framework */,
+				96735AF8B6B8F5716AE12A14 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B63EA76203312ADBB3641C29 /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				1A8F08673627C2CD8C431BEC /* ClipSegment.swift */,
+				397DA16906EEEEA7A4F273FC /* EditorReducer.swift */,
+				792A438FE9260031FEE5EE34 /* EditorState.swift */,
+				137EACF51E5289F88B1C025F /* TimelineProjector.swift */,
+			);
+			path = Editor;
+			sourceTree = "<group>";
+		};
+		D0D24F555886C14DB3520409 /* Clipper */ = {
+			isa = PBXGroup;
+			children = (
+				4D5A58FA24699EC9DBA9D85F /* ClipperApp.swift */,
+			);
+			path = Clipper;
+			sourceTree = "<group>";
+		};
+		E0648DF31535E0F6C9C6D6BD /* ClipperKit */ = {
+			isa = PBXGroup;
+			children = (
+				314C2F9DF99D3E8898B0B5E6 /* App */,
+				B63EA76203312ADBB3641C29 /* Editor */,
+				1E662B0D85F4821EB5211778 /* Export */,
+				7C95FFB17E1D3A99E55633C5 /* Playback */,
+				FA2B320956266FBED598BBB0 /* Support */,
+				3228559B29A2C5320662B484 /* UI */,
+			);
+			path = ClipperKit;
+			sourceTree = "<group>";
+		};
+		FA2B320956266FBED598BBB0 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				BD1F86FC25F52DB9324454E3 /* AppLogger.swift */,
+				FDF2EE1188A6043366C86169 /* CMTime+Helpers.swift */,
+				71687DABF36070BDFA40C4A0 /* KeyboardShortcutInterpreter.swift */,
+				28DB18C5DA73764A9DCA4A1C /* RuntimeTraceStore.swift */,
+				93A277C475B5CF59DA93D6FA /* TimecodeFormatter.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		23D641C6E67C533D69F678E2 /* ClipperUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 67CEAECD5C50090FFB7EC13B /* Build configuration list for PBXNativeTarget "ClipperUITests" */;
+			buildPhases = (
+				A15A0C43880F32B58A8CF106 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				75D86671FFFCA17754EE23C8 /* PBXTargetDependency */,
+			);
+			name = ClipperUITests;
+			packageProductDependencies = (
+			);
+			productName = ClipperUITests;
+			productReference = A09C6C5DE34027686EB2D8C4 /* ClipperUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		9C44E51FB7227E5B285648C2 /* Clipper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C57B74776BCFFABB1F92D37A /* Build configuration list for PBXNativeTarget "Clipper" */;
+			buildPhases = (
+				06DBB3219143E5CD2346DD04 /* Sources */,
+				7D6D6BCB86814582A8E2D8E7 /* Frameworks */,
+				99B6106309EB284C4F7E921B /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CF3F154E6D7555B82E468AC0 /* PBXTargetDependency */,
+			);
+			name = Clipper;
+			packageProductDependencies = (
+			);
+			productName = Clipper;
+			productReference = 116195CBBDC42ACA712F1096 /* Clipper.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C3E8322C81CD6197876EFF4A /* ClipperTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 433081500341955235C32905 /* Build configuration list for PBXNativeTarget "ClipperTests" */;
+			buildPhases = (
+				0B4F3A82EA78B4756BAAD698 /* Sources */,
+				04BA5041A88F7489EE4BEFE8 /* Frameworks */,
+				F26553608FDAC5D5B624C837 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BC3E729DFA9CF8B275379E27 /* PBXTargetDependency */,
+			);
+			name = ClipperTests;
+			packageProductDependencies = (
+			);
+			productName = ClipperTests;
+			productReference = D075FE0A7D25A3797EE5B13D /* ClipperTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		EC11476241663F95AA46C955 /* ClipperKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F5D20D1596C89EE799724AA2 /* Build configuration list for PBXNativeTarget "ClipperKit" */;
+			buildPhases = (
+				8188BA7AD078CDDE66254FD1 /* Sources */,
+				B16EC0A30D6873248C501833 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ClipperKit;
+			packageProductDependencies = (
+			);
+			productName = ClipperKit;
+			productReference = B8415649E0BC04D52612D6A9 /* ClipperKit.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A49D39E2C2AAF32366A62E7C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					23D641C6E67C533D69F678E2 = {
+						TestTargetID = 9C44E51FB7227E5B285648C2;
+					};
+					9C44E51FB7227E5B285648C2 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 023304A7BB160AFE86CBBAAA /* Build configuration list for PBXProject "Clipper" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4B4E62321BC54DB9DB2D1D16;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9C44E51FB7227E5B285648C2 /* Clipper */,
+				EC11476241663F95AA46C955 /* ClipperKit */,
+				C3E8322C81CD6197876EFF4A /* ClipperTests */,
+				23D641C6E67C533D69F678E2 /* ClipperUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		06DBB3219143E5CD2346DD04 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0535AAB1A91D0097C14AC8D1 /* ClipperApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0B4F3A82EA78B4756BAAD698 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3C3EA86926FC1686265CC42 /* EditorReducerTests.swift in Sources */,
+				3A0FC3A9DF9E37CB1858548D /* EditorWorkflowTests.swift in Sources */,
+				FA9ADCE93F8B8666C8CF8F45 /* FFmpegClipExporterTests.swift in Sources */,
+				ABD2419D3EC9728B4B7B7428 /* FFmpegCommandBuilderTests.swift in Sources */,
+				EC2A588947B017CBBA4FBDD8 /* KeyboardShortcutInterpreterTests.swift in Sources */,
+				ACC4C8173C3AA4C9E1496615 /* RuntimeTraceStoreTests.swift in Sources */,
+				3353A4B2C53325C2EED454FC /* TimelineProjectorTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8188BA7AD078CDDE66254FD1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D1CCEC5AE490207D34E12436 /* AVPlayerPlaybackController.swift in Sources */,
+				0A77FC0E68AE0F4D7FF8A2C7 /* AppLaunchOptions.swift in Sources */,
+				D801C218BB126DB86EF42C7F /* AppLogger.swift in Sources */,
+				2E188C7798B07A22F51F9DB9 /* CMTime+Helpers.swift in Sources */,
+				8151DD0E1C6424904C8BB818 /* ClipExportPlanner.swift in Sources */,
+				944BD76BD210019989787A6F /* ClipSegment.swift in Sources */,
+				C638137602A220B56139CA7E /* ClipperViewModel.swift in Sources */,
+				2AF51C52C2DA7F84ECDB0E4D /* ContentView.swift in Sources */,
+				13F490C20F89A1C57140AB93 /* EditorReducer.swift in Sources */,
+				E262432713401BB18F5E3345 /* EditorState.swift in Sources */,
+				6AF961A6DB17FB9162371B28 /* ExportPreset.swift in Sources */,
+				3AEADA7CA1351FF4ACB122EB /* FFmpegClipExporter.swift in Sources */,
+				7F60ACDD1D85523B5E7B7CFA /* FFmpegCommandBuilder.swift in Sources */,
+				EFC48A1FA9A8B530159B900D /* KeyboardCaptureView.swift in Sources */,
+				1DEF8220D553E7FE3C3A9705 /* KeyboardShortcutInterpreter.swift in Sources */,
+				AB847A5E0EC755D840136697 /* PlayerSurfaceView.swift in Sources */,
+				1AD41E7D9F91E67DAE623DFA /* RibbonView.swift in Sources */,
+				0F5C176BE82BD85CF383407B /* RuntimeTraceStore.swift in Sources */,
+				147AE093CF1DCB2B24F7D8F7 /* TimecodeFormatter.swift in Sources */,
+				4552F1238E5D19C1B78A2F47 /* TimelineProjector.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A15A0C43880F32B58A8CF106 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F07BDDD67B121650FC406828 /* ClipperUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		75D86671FFFCA17754EE23C8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9C44E51FB7227E5B285648C2 /* Clipper */;
+			targetProxy = 0795F5125C7B00C2CAF433F4 /* PBXContainerItemProxy */;
+		};
+		BC3E729DFA9CF8B275379E27 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EC11476241663F95AA46C955 /* ClipperKit */;
+			targetProxy = 2D1BA3E4CFEE9AF5ABDC655B /* PBXContainerItemProxy */;
+		};
+		CF3F154E6D7555B82E468AC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EC11476241663F95AA46C955 /* ClipperKit */;
+			targetProxy = 500E6606698FD0BD83C46F1A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		00B5763AE51416C8D58F6FD9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peter.clipper;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		227DF5A08E7D9FE6CD631CB9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peter.clipper.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Clipper;
+			};
+			name = Release;
+		};
+		42CFA4C4D0482E357AFFF65E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peter.clipper;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		4897BA99AA903E9A257BC463 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		5C7648BEB2840D5850243D6B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peter.clipper.kit;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		60769927331C31830AC1D756 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peter.clipper.tests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		625B1204F3B6BE22AF3F91D2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peter.clipper.kit;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		94A4A213F50642B6CD71A464 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peter.clipper.tests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D874647EFED1FFB0A743E72B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		FF15F703FFAF6CD801D3FAED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peter.clipper.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Clipper;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		023304A7BB160AFE86CBBAAA /* Build configuration list for PBXProject "Clipper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D874647EFED1FFB0A743E72B /* Debug */,
+				4897BA99AA903E9A257BC463 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		433081500341955235C32905 /* Build configuration list for PBXNativeTarget "ClipperTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94A4A213F50642B6CD71A464 /* Debug */,
+				60769927331C31830AC1D756 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		67CEAECD5C50090FFB7EC13B /* Build configuration list for PBXNativeTarget "ClipperUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FF15F703FFAF6CD801D3FAED /* Debug */,
+				227DF5A08E7D9FE6CD631CB9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C57B74776BCFFABB1F92D37A /* Build configuration list for PBXNativeTarget "Clipper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00B5763AE51416C8D58F6FD9 /* Debug */,
+				42CFA4C4D0482E357AFFF65E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F5D20D1596C89EE799724AA2 /* Build configuration list for PBXNativeTarget "ClipperKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5C7648BEB2840D5850243D6B /* Debug */,
+				625B1204F3B6BE22AF3F91D2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A49D39E2C2AAF32366A62E7C /* Project object */;
+}

@@ -1,0 +1,10 @@
+.DS_Store
+.deriveddata/
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.mp4
+*.mov
+*.h264
+*.h265

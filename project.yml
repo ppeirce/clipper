@@ -1,0 +1,74 @@
+name: Clipper
+
+options:
+  minimumXcodeGenVersion: 2.38.0
+  deploymentTarget:
+    macOS: "14.0"
+
+configs:
+  Debug: debug
+  Release: release
+
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    MACOSX_DEPLOYMENT_TARGET: 14.0
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.1.0
+
+targets:
+  ClipperKit:
+    type: framework
+    platform: macOS
+    sources:
+      - path: ClipperKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.peter.clipper.kit
+        GENERATE_INFOPLIST_FILE: YES
+        DEFINES_MODULE: YES
+    dependencies:
+      - sdk: AppKit.framework
+      - sdk: AVFoundation.framework
+      - sdk: AVKit.framework
+      - sdk: CoreMedia.framework
+      - sdk: OSLog.framework
+      - sdk: SwiftUI.framework
+  Clipper:
+    type: application
+    platform: macOS
+    sources:
+      - path: Clipper
+    dependencies:
+      - target: ClipperKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.peter.clipper
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+    scheme:
+      testTargets:
+        - ClipperTests
+        - ClipperUITests
+  ClipperTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: ClipperTests
+    dependencies:
+      - target: ClipperKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.peter.clipper.tests
+        GENERATE_INFOPLIST_FILE: YES
+  ClipperUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: ClipperUITests
+    dependencies:
+      - target: Clipper
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.peter.clipper.uitests
+        GENERATE_INFOPLIST_FILE: YES
