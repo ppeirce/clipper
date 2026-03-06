@@ -157,6 +157,14 @@ final class ClipperViewModel: ObservableObject {
         markOut()
     }
 
+    func scrubToTimeFromUI(_ time: CMTime) {
+        seek(to: time, recordTrace: false)
+    }
+
+    func commitScrubToTimeFromUI(_ time: CMTime) {
+        seek(to: time, recordTrace: true)
+    }
+
     func selectClip(_ id: UUID?) {
         apply(.selectClip(id))
 
@@ -316,29 +324,20 @@ final class ClipperViewModel: ObservableObject {
     }
 
     private func seek(seconds: Double) {
-        let previousTime = state.currentTime
-        apply(.seekSeconds(seconds))
-        guard !state.currentTime.isEqualTo(previousTime) else {
-            return
-        }
-        recordTrace(
-            category: .playback,
-            message: "Seeked playback",
-            details: TimecodeFormatter.displayString(for: state.currentTime)
-        )
+        let target = CMTime.clipperSeconds(state.currentTime.secondsValue + seconds)
+        seek(to: target, recordTrace: true)
     }
 
     private func step(frames: Int) {
-        let previousTime = state.currentTime
-        apply(.seekFrames(frames))
-        guard !state.currentTime.isEqualTo(previousTime) else {
+        guard let asset = state.asset else {
             return
         }
-        recordTrace(
-            category: .playback,
-            message: "Stepped frame",
-            details: TimecodeFormatter.displayString(for: state.currentTime)
+
+        let target = CMTimeAdd(
+            state.currentTime.clamped(lower: .zero, upper: asset.duration),
+            CMTimeMultiplyByFloat64(asset.frameDuration, multiplier: Double(frames))
         )
+        seek(to: target, recordTrace: true, message: "Stepped frame")
     }
 
     private func markIn() {
@@ -386,5 +385,28 @@ final class ClipperViewModel: ObservableObject {
 
     private func refreshTraceEvents() async {
         recentTraceEvents = await tracer.recentEvents()
+    }
+
+    private func seek(to time: CMTime, recordTrace shouldTrace: Bool, message: String = "Seeked playback") {
+        guard let asset = state.asset else {
+            return
+        }
+
+        let previousTime = state.currentTime
+        let clampedTime = time.clamped(lower: .zero, upper: asset.duration)
+        playbackController.seek(to: clampedTime)
+
+        state.currentTime = clampedTime
+        refreshStatus()
+
+        guard shouldTrace, !state.currentTime.isEqualTo(previousTime) else {
+            return
+        }
+
+        self.recordTrace(
+            category: .playback,
+            message: message,
+            details: TimecodeFormatter.displayString(for: state.currentTime)
+        )
     }
 }

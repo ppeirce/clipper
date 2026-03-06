@@ -15,16 +15,18 @@ public struct ContentView: View {
 
     public var body: some View {
         GeometryReader { geometry in
-            let compactLayout = geometry.size.width < 1_220
+            let shouldScroll = geometry.size.height < 820 || geometry.size.width < 980
 
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 22) {
-                    commandDeck
-                    workspace(compactLayout: compactLayout)
-                    timelineConsole
+            Group {
+                if shouldScroll {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        mainLayout(in: geometry)
+                            .frame(maxWidth: .infinity, alignment: .top)
+                    }
+                } else {
+                    mainLayout(in: geometry)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 }
-                .padding(24)
-                .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .top)
             }
         }
         .background(ConsoleBackdrop())
@@ -32,6 +34,23 @@ public struct ContentView: View {
             KeyboardCaptureView(onKeyDown: viewModel.handle)
                 .frame(width: 0, height: 0)
         )
+    }
+
+    @ViewBuilder
+    private func mainLayout(in geometry: GeometryProxy) -> some View {
+        let playerHeight = min(max(geometry.size.height * 0.62, 320), 760)
+
+        VStack(spacing: 12) {
+            utilityBar(compact: geometry.size.width < 1_180)
+            playerConsole(playerHeight: playerHeight)
+
+            if showsDiagnostics {
+                diagnosticsDrawer
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.easeOut(duration: 0.18), value: showsDiagnostics)
+        .padding(16)
     }
 
     private var sourceName: String {
@@ -47,6 +66,10 @@ public struct ContentView: View {
             return "--:--:--.---"
         }
         return TimecodeFormatter.displayString(for: asset.duration)
+    }
+
+    private var clipCountLabel: String {
+        "\(viewModel.state.clips.count) clip(s)"
     }
 
     private var statusTone: ConsoleStatusTone {
@@ -68,473 +91,337 @@ public struct ContentView: View {
         return .idle
     }
 
-    private var statusLabel: String {
+    private var statusShortLabel: String {
         switch statusTone {
         case .idle:
             return "Idle"
         case .ready:
             return "Ready"
         case .marking:
-            return "Marking"
+            return "In"
         case .selection:
-            return "Selection"
+            return "Clip"
         case .exporting:
-            return "Exporting"
+            return "Export"
         case .error:
             return "Error"
         }
     }
 
-    private var clipCountLabel: String {
-        "\(viewModel.state.clips.count) clip(s)"
+    @ViewBuilder
+    private func utilityBar(compact: Bool) -> some View {
+        if compact {
+            VStack(alignment: .leading, spacing: 10) {
+                utilityHeader
+                utilityActions
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .consolePanel(radius: 22)
+        } else {
+            HStack(spacing: 12) {
+                utilityHeader
+                Spacer(minLength: 12)
+                utilityActions
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .consolePanel(radius: 22)
+        }
     }
 
-    private var commandDeck: some View {
-        HStack(spacing: 18) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Clipper")
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textPrimary)
+    private var utilityHeader: some View {
+        HStack(spacing: 10) {
+            Text("Clipper")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(ConsolePalette.textPrimary)
 
-                Text("Precision clip review and export console")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textMuted)
+            Text(sourceName)
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                .foregroundStyle(ConsolePalette.textMuted)
+                .lineLimit(1)
 
-                Text(sourceName)
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundStyle(ConsolePalette.textSubtle)
-                    .lineLimit(1)
-            }
+            StatusToken(label: statusShortLabel, tone: statusTone)
 
-            Spacer(minLength: 12)
+            Text(viewModel.statusMessage)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(statusTone.messageColor)
+                .lineLimit(1)
+                .accessibilityLabel(viewModel.statusMessage)
+                .accessibilityIdentifier("status-message")
+        }
+    }
 
-            HStack(spacing: 10) {
-                ConsoleMetricPill(title: "State", value: statusLabel, emphasis: statusTone.emphasisColor)
-                ClipCountPill(value: clipCountLabel)
-            }
+    private var utilityActions: some View {
+        HStack(spacing: 8) {
+            CountBadge(value: clipCountLabel)
 
-            Button("Open Video", action: viewModel.openVideo)
+            presetMenu
+
+            Button("Open", action: viewModel.openVideo)
                 .keyboardShortcut("o", modifiers: [.command])
-                .buttonStyle(ConsoleButtonStyle(role: .secondary))
+                .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
                 .accessibilityIdentifier("open-video")
 
-            Button(viewModel.isExporting ? "Exporting..." : "Export Clips", action: viewModel.exportClips)
-                .buttonStyle(ConsoleButtonStyle(role: .primary))
+            Button(viewModel.isExporting ? "Exporting..." : "Export", action: viewModel.exportClips)
+                .buttonStyle(ConsoleButtonStyle(role: .primary, compact: true))
                 .disabled(!viewModel.state.canExport || viewModel.isExporting)
                 .accessibilityIdentifier("export-clips")
 
-            Button("Clear Clips", action: viewModel.clearClips)
-                .buttonStyle(ConsoleButtonStyle(role: .secondary))
-                .disabled(viewModel.state.clips.isEmpty)
-        }
-        .padding(20)
-        .consolePanel(radius: 30)
-    }
-
-    @ViewBuilder
-    private func workspace(compactLayout: Bool) -> some View {
-        if compactLayout {
-            VStack(spacing: 22) {
-                playerColumn
-                inspectorColumn
-            }
-        } else {
-            HStack(alignment: .top, spacing: 22) {
-                playerColumn
-                    .frame(maxWidth: .infinity)
-
-                inspectorColumn
-                    .frame(width: 334)
-            }
-        }
-    }
-
-    private var playerColumn: some View {
-        VStack(spacing: 22) {
-            playerStage
-            transportDeck
-        }
-    }
-
-    private var playerStage: some View {
-        VStack(spacing: 18) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Source Monitor")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textSubtle)
-                        .textCase(.uppercase)
-
-                    Text(sourceName)
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textPrimary)
-                        .lineLimit(1)
+            Menu {
+                Button(showsDiagnostics ? "Hide Diagnostics" : "Show Diagnostics") {
+                    showsDiagnostics.toggle()
                 }
 
-                Spacer(minLength: 12)
+                Divider()
 
-                HStack(spacing: 10) {
-                    ConsoleMetricPill(title: "Playhead", value: currentTimeString, emphasis: ConsolePalette.playhead)
-                    ConsoleMetricPill(title: "Duration", value: durationString, emphasis: ConsolePalette.highlight)
-                }
+                Button("Clear Clips", action: viewModel.clearClips)
+                    .disabled(viewModel.state.clips.isEmpty)
+            } label: {
+                Text("More")
             }
-
-            PlayerSurfaceView(player: viewModel.player, showsPlaceholder: !viewModel.hasLoadedVideo)
-        }
-        .padding(20)
-        .consolePanel(radius: 34)
-    }
-
-    private var transportDeck: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top, spacing: 18) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Transport")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textSubtle)
-                        .textCase(.uppercase)
-
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(currentTimeString)
-                            .font(.system(size: 28, weight: .bold, design: .monospaced))
-                            .foregroundStyle(ConsolePalette.textPrimary)
-
-                        Text("/")
-                            .font(.system(size: 18, weight: .medium, design: .monospaced))
-                            .foregroundStyle(ConsolePalette.textSubtle)
-
-                        Text(durationString)
-                            .font(.system(size: 18, weight: .medium, design: .monospaced))
-                            .foregroundStyle(ConsolePalette.textMuted)
-                    }
-                }
-
-                Spacer(minLength: 12)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(statusLabel)
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(statusTone.emphasisColor)
-                        .textCase(.uppercase)
-
-                    Text(viewModel.statusMessage)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(statusTone.messageColor)
-                        .multilineTextAlignment(.leading)
-                        .accessibilityLabel(viewModel.statusMessage)
-                        .accessibilityIdentifier("status-message")
-                }
-                .frame(maxWidth: 360, alignment: .leading)
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    TransportControlButton(title: "Frame -1", keyHint: "Shift Left") {
-                        viewModel.stepBackwardFromUI()
-                    }
-
-                    TransportControlButton(title: "Back 5s", keyHint: "Left") {
-                        viewModel.seekBackwardFromUI()
-                    }
-
-                    TransportControlButton(
-                        title: viewModel.state.isPlaying ? "Pause" : "Play",
-                        keyHint: "Space",
-                        role: .primary
-                    ) {
-                        viewModel.togglePlaybackFromUI()
-                    }
-
-                    TransportControlButton(title: "Fwd 5s", keyHint: "Right") {
-                        viewModel.seekForwardFromUI()
-                    }
-
-                    TransportControlButton(title: "Frame +1", keyHint: "Shift Right") {
-                        viewModel.stepForwardFromUI()
-                    }
-
-                    TransportControlButton(title: "Mark In", keyHint: "I") {
-                        viewModel.markInFromUI()
-                    }
-
-                    TransportControlButton(title: "Mark Out", keyHint: "O", role: .primary) {
-                        viewModel.markOutFromUI()
-                    }
-                }
-                .padding(.vertical, 2)
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ConsoleKeyLegend("Space", "Play/Pause")
-                    ConsoleKeyLegend("Left / Right", "+/- 5 seconds")
-                    ConsoleKeyLegend("Shift + Left / Right", "+/- 1 frame")
-                    ConsoleKeyLegend("I / O", "Mark clip bounds")
-                }
-            }
-        }
-        .padding(20)
-        .consolePanel(radius: 30)
-    }
-
-    private var inspectorColumn: some View {
-        VStack(spacing: 22) {
-            clipEditingPanel
-            clipNavigatorPanel
-            sessionPanel
-            presetPanel
-            diagnosticsPanel
+            .menuStyle(.borderlessButton)
+            .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
         }
     }
 
-    private var sessionPanel: some View {
-        InspectorPanel(
-            eyebrow: "Session",
-            title: "Current Reel",
-            detail: "One source at a time, clip ranges kept in source order."
-        ) {
-            VStack(spacing: 12) {
-                ConsoleValueRow(label: "Source", value: sourceName)
-                ConsoleValueRow(label: "Duration", value: durationString)
-                ConsoleValueRow(label: "Selected Preset", value: viewModel.state.exportPreset.displayName)
-                ConsoleValueRow(label: "Clips Queued", value: clipCountLabel)
+    private var presetMenu: some View {
+        Menu {
+            ForEach(ExportPreset.allCases) { preset in
+                Button {
+                    viewModel.setExportPreset(preset)
+                } label: {
+                    HStack {
+                        Text(preset.displayName)
+                        if viewModel.state.exportPreset == preset {
+                            Spacer()
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+                .accessibilityIdentifier(preset.buttonIdentifier)
             }
-        }
-    }
-
-    private var presetPanel: some View {
-        InspectorPanel(
-            eyebrow: "Export",
-            title: "Preset Bank",
-            detail: "One preset defines the entire export run."
-        ) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Preset: \(viewModel.state.exportPreset.displayName)")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textPrimary)
+        } label: {
+            HStack(spacing: 6) {
+                Text(viewModel.state.exportPreset.displayName)
+                    .lineLimit(1)
                     .accessibilityLabel("Preset: \(viewModel.state.exportPreset.displayName)")
                     .accessibilityIdentifier("selected-export-preset")
 
-                Text(viewModel.state.exportPreset.summary)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textMuted)
-                    .accessibilityLabel(viewModel.state.exportPreset.summary)
-                    .accessibilityIdentifier("export-preset-summary")
-
-                ForEach(ExportPreset.allCases) { preset in
-                    PresetOptionCard(
-                        preset: preset,
-                        isSelected: viewModel.state.exportPreset == preset,
-                        action: { viewModel.setExportPreset(preset) }
-                    )
-                    .accessibilityValue(viewModel.state.exportPreset == preset ? "selected" : "not selected")
-                    .accessibilityIdentifier(preset.buttonIdentifier)
-                }
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .bold))
             }
         }
+        .menuStyle(.borderlessButton)
+        .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
+        .help(viewModel.state.exportPreset.summary)
     }
 
-    private var clipNavigatorPanel: some View {
-        InspectorPanel(
-            eyebrow: "Clips",
-            title: "Range Queue",
-            detail: "Select a saved range here or directly on the timeline surface."
-        ) {
-            VStack(spacing: 10) {
-                if viewModel.state.clips.isEmpty {
-                    Text("No saved clips yet.")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textPrimary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Text("Press I to mark a start and O to commit the range.")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textMuted)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    ForEach(Array(viewModel.state.clips.enumerated()), id: \.element.id) { index, clip in
-                        Button {
-                            viewModel.selectClip(clip.id)
-                        } label: {
-                            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                                Text("Clip \(index + 1)")
-                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(viewModel.state.selectedClipID == clip.id ? ConsolePalette.panelBase : ConsolePalette.textPrimary)
-
-                                Spacer(minLength: 10)
-
-                                Text("\(TimecodeFormatter.displayString(for: clip.start)) - \(TimecodeFormatter.displayString(for: clip.end))")
-                                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(viewModel.state.selectedClipID == clip.id ? ConsolePalette.panelBase.opacity(0.82) : ConsolePalette.textMuted)
-                                    .lineLimit(1)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .fill(viewModel.state.selectedClipID == clip.id ? AnyShapeStyle(ConsolePalette.accentPanel) : AnyShapeStyle(ConsolePalette.subpanelFill))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .strokeBorder(
-                                                viewModel.state.selectedClipID == clip.id ? ConsolePalette.highlight : ConsolePalette.subpanelStroke,
-                                                lineWidth: 1
-                                            )
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("clip-chip-\(index + 1)")
-                    }
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var clipEditingPanel: some View {
-        if let selectedClip = viewModel.state.selectedClip {
-            InspectorPanel(
-                eyebrow: "Selection",
-                title: "Clip Edit",
-                detail: "Bind either edge of the selected range to the current playhead."
-            ) {
-                VStack(spacing: 12) {
-                    ConsoleValueRow(label: "Start", value: TimecodeFormatter.displayString(for: selectedClip.start))
-                    ConsoleValueRow(label: "End", value: TimecodeFormatter.displayString(for: selectedClip.end))
-                    ConsoleValueRow(label: "Duration", value: TimecodeFormatter.displayString(for: selectedClip.duration))
-
-                    VStack(spacing: 10) {
-                        Button("Set Start To Playhead") {
-                            viewModel.setSelectedClipBoundary(.start)
-                        }
-                        .buttonStyle(ConsoleButtonStyle(role: .secondary))
-                        .accessibilityIdentifier("set-selected-start-to-playhead")
-
-                        Button("Set End To Playhead") {
-                            viewModel.setSelectedClipBoundary(.end)
-                        }
-                        .buttonStyle(ConsoleButtonStyle(role: .secondary))
-                        .accessibilityIdentifier("set-selected-end-to-playhead")
-
-                        Button("Delete Clip") {
-                            viewModel.deleteSelectedClip()
-                        }
-                        .buttonStyle(ConsoleButtonStyle(role: .destructive))
-                        .accessibilityIdentifier("delete-selected-clip")
-                    }
-                }
-            }
-        } else {
-            InspectorPanel(
-                eyebrow: "Selection",
-                title: "Clip Edit",
-                detail: "Select a clip block on the timeline to retime or remove it."
-            ) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("No clip selected.")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textPrimary)
-
-                    Text("Create a range with I and O, or click an existing segment in the timeline console.")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textMuted)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-
-    private var diagnosticsPanel: some View {
-        InspectorPanel(
-            eyebrow: "Observability",
-            title: "Diagnostics",
-            detail: "Recent trace events are available without dominating the main workflow."
-        ) {
-            DisclosureGroup(isExpanded: $showsDiagnostics) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(viewModel.traceFileURL.path)
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundStyle(ConsolePalette.textSubtle)
-                        .textSelection(.enabled)
-
-                    if viewModel.recentTraceEvents.isEmpty {
-                        Text("No trace events yet.")
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundStyle(ConsolePalette.textMuted)
-                    } else {
-                        ForEach(Array(viewModel.recentTraceEvents.suffix(6).reversed())) { event in
-                            Text(event.displayLine)
-                                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                .foregroundStyle(ConsolePalette.textMuted)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                }
-                .padding(.top, 8)
-            } label: {
-                HStack {
-                    Text(showsDiagnostics ? "Hide Trace Feed" : "Show Trace Feed")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textPrimary)
-                    Spacer(minLength: 8)
-                    Text("\(viewModel.recentTraceEvents.count)")
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundStyle(ConsolePalette.textSubtle)
-                }
-            }
-            .tint(ConsolePalette.highlight)
-        }
-    }
-
-    private var timelineConsole: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Timeline Console")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textSubtle)
-                        .textCase(.uppercase)
-
-                    Text("Clip ribbon")
-                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textPrimary)
-
-                    Text("The red line is the live playhead. Click a segment to select it for inspection and retiming.")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textMuted)
+    private func playerConsole(playerHeight: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            PlayerSurfaceView(player: viewModel.player, showsPlaceholder: !viewModel.hasLoadedVideo)
+                .frame(height: playerHeight)
+                .overlay(alignment: .topLeading) {
+                    playerOverlay
+                        .padding(12)
                 }
 
-                Spacer(minLength: 12)
-
-                VStack(alignment: .trailing, spacing: 6) {
-                    ConsoleMetricPill(title: "Current", value: currentTimeString, emphasis: ConsolePalette.playhead)
-
-                    if let pendingInPoint = viewModel.state.pendingInPoint {
-                        ConsoleMetricPill(
-                            title: "Pending In",
-                            value: TimecodeFormatter.displayString(for: pendingInPoint),
-                            emphasis: ConsolePalette.pending
-                        )
-                    }
-                }
-            }
-
-            RibbonView(
-                duration: viewModel.state.asset?.duration ?? .zero,
-                currentTime: viewModel.state.currentTime,
+            CompactRail(
+                currentTime: currentTimeString,
+                duration: durationString,
+                isPlaying: viewModel.state.isPlaying,
+                durationTime: viewModel.state.asset?.duration ?? .zero,
+                currentTimeValue: viewModel.state.currentTime,
                 clips: viewModel.state.clips,
                 selectedClipID: viewModel.state.selectedClipID,
                 pendingInPoint: viewModel.state.pendingInPoint,
-                onSelectClip: viewModel.selectClip
+                selectedClip: viewModel.state.selectedClip,
+                selectedClipIndex: viewModel.state.selectedClipIndex,
+                onPlayPause: viewModel.togglePlaybackFromUI,
+                onSeekBackward: viewModel.seekBackwardFromUI,
+                onSeekForward: viewModel.seekForwardFromUI,
+                onStepBackward: viewModel.stepBackwardFromUI,
+                onStepForward: viewModel.stepForwardFromUI,
+                onMarkIn: viewModel.markInFromUI,
+                onMarkOut: viewModel.markOutFromUI,
+                onSelectClip: viewModel.selectClip,
+                onScrub: viewModel.scrubToTimeFromUI,
+                onScrubEnd: viewModel.commitScrubToTimeFromUI,
+                onSetSelectedStart: { viewModel.setSelectedClipBoundary(.start) },
+                onSetSelectedEnd: { viewModel.setSelectedClipBoundary(.end) },
+                onDeleteSelectedClip: viewModel.deleteSelectedClip
             )
         }
-        .padding(20)
-        .consolePanel(radius: 34)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .consolePanel(radius: 28)
+    }
+
+    private var playerOverlay: some View {
+        HStack(spacing: 8) {
+            OverlayBadge(label: currentTimeString, emphasis: ConsolePalette.playhead)
+            OverlayBadge(label: durationString, emphasis: ConsolePalette.highlight)
+
+            if let pendingInPoint = viewModel.state.pendingInPoint {
+                OverlayBadge(
+                    label: "IN \(TimecodeFormatter.displayString(for: pendingInPoint))",
+                    emphasis: ConsolePalette.pending
+                )
+            }
+        }
+    }
+
+    private var diagnosticsDrawer: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Text("Diagnostics")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(ConsolePalette.textPrimary)
+
+                Text(viewModel.traceFileURL.path)
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(ConsolePalette.textSubtle)
+                    .lineLimit(1)
+                    .textSelection(.enabled)
+
+                Spacer(minLength: 10)
+
+                Button("Hide") {
+                    showsDiagnostics = false
+                }
+                .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
+            }
+
+            if viewModel.recentTraceEvents.isEmpty {
+                Text("No trace events yet.")
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(ConsolePalette.textMuted)
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(Array(viewModel.recentTraceEvents.suffix(6).reversed())) { event in
+                        Text(event.displayLine)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .foregroundStyle(ConsolePalette.textMuted)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .consolePanel(radius: 22)
     }
 }
 
-private enum ConsoleStatusTone {
+private struct CompactRail: View {
+    let currentTime: String
+    let duration: String
+    let isPlaying: Bool
+    let durationTime: CMTime
+    let currentTimeValue: CMTime
+    let clips: [ClipSegment]
+    let selectedClipID: UUID?
+    let pendingInPoint: CMTime?
+    let selectedClip: ClipSegment?
+    let selectedClipIndex: Int?
+    let onPlayPause: () -> Void
+    let onSeekBackward: () -> Void
+    let onSeekForward: () -> Void
+    let onStepBackward: () -> Void
+    let onStepForward: () -> Void
+    let onMarkIn: () -> Void
+    let onMarkOut: () -> Void
+    let onSelectClip: (UUID?) -> Void
+    let onScrub: (CMTime) -> Void
+    let onScrubEnd: (CMTime) -> Void
+    let onSetSelectedStart: () -> Void
+    let onSetSelectedEnd: () -> Void
+    let onDeleteSelectedClip: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                RailButton(label: "-1f", action: onStepBackward)
+                RailButton(label: "-5s", action: onSeekBackward)
+                RailButton(label: isPlaying ? "Pause" : "Play", role: .primary, action: onPlayPause)
+                RailButton(label: "+5s", action: onSeekForward)
+                RailButton(label: "+1f", action: onStepForward)
+
+                Spacer(minLength: 8)
+
+                Text(currentTime)
+                    .font(.system(size: 17, weight: .bold, design: .monospaced))
+                    .foregroundStyle(ConsolePalette.textPrimary)
+
+                Text("/")
+                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(ConsolePalette.textSubtle)
+
+                Text(duration)
+                    .font(.system(size: 13, weight: .medium, design: .monospaced))
+                    .foregroundStyle(ConsolePalette.textMuted)
+
+                Spacer(minLength: 8)
+
+                RailButton(label: "I", role: pendingInPoint == nil ? .secondary : .accent, action: onMarkIn)
+                RailButton(label: "O", role: .primary, action: onMarkOut)
+            }
+
+            RibbonView(
+                duration: durationTime,
+                currentTime: currentTimeValue,
+                clips: clips,
+                selectedClipID: selectedClipID,
+                pendingInPoint: pendingInPoint,
+                onSelectClip: onSelectClip,
+                onScrub: onScrub,
+                onScrubEnd: onScrubEnd
+            )
+
+            if let selectedClip {
+                HStack(spacing: 8) {
+                    SelectionBadge(index: selectedClipIndex.map { $0 + 1 }, clip: selectedClip)
+
+                    RailButton(label: "Set In", action: onSetSelectedStart)
+                        .accessibilityIdentifier("set-selected-start-to-playhead")
+
+                    RailButton(label: "Set Out", action: onSetSelectedEnd)
+                        .accessibilityIdentifier("set-selected-end-to-playhead")
+
+                    RailButton(label: "Delete", role: .destructive, action: onDeleteSelectedClip)
+                        .accessibilityIdentifier("delete-selected-clip")
+
+                    Spacer(minLength: 0)
+                }
+            } else if let pendingInPoint {
+                HStack(spacing: 8) {
+                    PendingBadge(
+                        start: TimecodeFormatter.displayString(for: pendingInPoint),
+                        end: currentTime
+                    )
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(0.22),
+                    ConsolePalette.panelBase.opacity(0.92)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(Color.white.opacity(0.05))
+                .frame(height: 1)
+        }
+    }
+}
+
+private enum ConsoleStatusTone: Equatable {
     case idle
     case ready
     case marking
@@ -584,14 +471,6 @@ enum ConsolePalette {
 
     static let subpanelFill = Color(red: 0.122, green: 0.134, blue: 0.156)
     static let subpanelStroke = Color.white.opacity(0.06)
-    static let accentPanel = LinearGradient(
-        colors: [
-            Color(red: 0.356, green: 0.232, blue: 0.168).opacity(0.95),
-            Color(red: 0.236, green: 0.164, blue: 0.125).opacity(0.98)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
 
     static let textPrimary = Color(red: 0.95, green: 0.96, blue: 0.97)
     static let textMuted = Color(red: 0.76, green: 0.79, blue: 0.82)
@@ -681,28 +560,39 @@ private enum ConsoleButtonRole {
     case primary
     case secondary
     case destructive
+    case accent
 }
 
 private struct ConsoleButtonStyle: ButtonStyle {
     let role: ConsoleButtonRole
+    var compact = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 13, weight: .semibold, design: .rounded))
-            .foregroundStyle(role == .primary ? ConsolePalette.panelBase : ConsolePalette.textPrimary)
-            .frame(minWidth: 90)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 11)
+            .font(.system(size: compact ? 12 : 13, weight: .semibold, design: .rounded))
+            .foregroundStyle(foregroundColor)
+            .frame(minWidth: compact ? 0 : 90)
+            .padding(.horizontal, compact ? 12 : 16)
+            .padding(.vertical, compact ? 8 : 11)
             .background(background(isPressed: configuration.isPressed))
             .scaleEffect(configuration.isPressed ? 0.985 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 
+    private var foregroundColor: Color {
+        switch role {
+        case .primary, .accent:
+            return ConsolePalette.panelBase
+        case .secondary, .destructive:
+            return ConsolePalette.textPrimary
+        }
+    }
+
     private func background(isPressed: Bool) -> some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
+        RoundedRectangle(cornerRadius: compact ? 13 : 16, style: .continuous)
             .fill(fillGradient(isPressed: isPressed))
             .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: compact ? 13 : 16, style: .continuous)
                     .strokeBorder(borderColor(isPressed: isPressed), lineWidth: 1)
             )
     }
@@ -736,6 +626,15 @@ private struct ConsoleButtonStyle: ButtonStyle {
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
+        case .accent:
+            return LinearGradient(
+                colors: [
+                    ConsolePalette.pending.opacity(isPressed ? 0.84 : 1),
+                    ConsolePalette.highlight.opacity(isPressed ? 0.84 : 1)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         }
     }
 
@@ -747,125 +646,118 @@ private struct ConsoleButtonStyle: ButtonStyle {
             return Color.white.opacity(isPressed ? 0.05 : 0.09)
         case .destructive:
             return ConsolePalette.error.opacity(isPressed ? 0.35 : 0.55)
+        case .accent:
+            return ConsolePalette.pending.opacity(isPressed ? 0.4 : 0.6)
         }
     }
 }
 
-private struct TransportControlButton: View {
-    let title: String
-    let keyHint: String
+private struct RailButton: View {
+    let label: String
     var role: ConsoleButtonRole = .secondary
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 5) {
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                Text(keyHint)
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundStyle(role == .primary ? ConsolePalette.panelBase.opacity(0.8) : ConsolePalette.textSubtle)
-            }
-            .frame(width: 104, alignment: .leading)
-        }
-        .buttonStyle(ConsoleButtonStyle(role: role))
+        Button(label, action: action)
+            .buttonStyle(ConsoleButtonStyle(role: role, compact: true))
     }
 }
 
-private struct ConsoleMetricPill: View {
-    let title: String
+private struct StatusToken: View {
+    let label: String
+    let tone: ConsoleStatusTone
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: 10, weight: .bold, design: .rounded))
+            .foregroundStyle(tone == .error ? ConsolePalette.textPrimary : tone.emphasisColor)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(
+                Capsule(style: .continuous)
+                    .fill((tone == .error ? ConsolePalette.error : tone.emphasisColor).opacity(0.16))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(tone.emphasisColor.opacity(0.36), lineWidth: 1)
+                    )
+            )
+    }
+}
+
+private struct CountBadge: View {
     let value: String
+
+    var body: some View {
+        Text(value)
+            .font(.system(size: 12, weight: .bold, design: .monospaced))
+            .foregroundStyle(ConsolePalette.textPrimary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(ConsolePalette.subpanelFill)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(ConsolePalette.highlight.opacity(0.45), lineWidth: 1)
+                    )
+            )
+            .accessibilityLabel(value)
+            .accessibilityIdentifier("clip-count")
+    }
+}
+
+private struct OverlayBadge: View {
+    let label: String
     let emphasis: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundStyle(ConsolePalette.textSubtle)
-                .textCase(.uppercase)
-
-            Text(value)
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundStyle(ConsolePalette.textPrimary)
-                .lineLimit(1)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(ConsolePalette.subpanelFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(emphasis.opacity(0.55), lineWidth: 1)
-                )
-        )
+        Text(label)
+            .font(.system(size: 11, weight: .bold, design: .monospaced))
+            .foregroundStyle(ConsolePalette.textPrimary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(Color.black.opacity(0.44))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(emphasis.opacity(0.5), lineWidth: 1)
+                    )
+            )
     }
 }
 
-private struct ClipCountPill: View {
-    let value: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Clips")
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundStyle(ConsolePalette.textSubtle)
-                .textCase(.uppercase)
-
-            Text(value)
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundStyle(ConsolePalette.textPrimary)
-                .lineLimit(1)
-                .accessibilityLabel(value)
-                .accessibilityIdentifier("clip-count")
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(ConsolePalette.subpanelFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(ConsolePalette.highlight.opacity(0.55), lineWidth: 1)
-                )
-        )
-    }
-}
-
-private struct ConsoleKeyLegend: View {
-    let title: String
-    let subtitle: String
-
-    init(_ title: String, _ subtitle: String) {
-        self.title = title
-        self.subtitle = subtitle
-    }
+private struct SelectionBadge: View {
+    let index: Int?
+    let clip: ClipSegment
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(title)
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                .foregroundStyle(ConsolePalette.textPrimary)
+            Text(index.map { "C\($0)" } ?? "Clip")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(ConsolePalette.panelBase)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 6)
+                .padding(.vertical, 5)
                 .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.black.opacity(0.18))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
-                        )
+                    Capsule(style: .continuous)
+                        .fill(ConsolePalette.highlight)
                 )
 
-            Text(subtitle)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
+            Text("\(TimecodeFormatter.displayString(for: clip.start)) - \(TimecodeFormatter.displayString(for: clip.end))")
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .foregroundStyle(ConsolePalette.textPrimary)
+                .lineLimit(1)
+
+            Text(TimecodeFormatter.displayString(for: clip.duration))
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .foregroundStyle(ConsolePalette.textMuted)
+                .lineLimit(1)
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(
             Capsule(style: .continuous)
-                .fill(ConsolePalette.subpanelFill.opacity(0.9))
+                .fill(ConsolePalette.subpanelFill)
                 .overlay(
                     Capsule(style: .continuous)
                         .strokeBorder(ConsolePalette.subpanelStroke, lineWidth: 1)
@@ -874,124 +766,43 @@ private struct ConsoleKeyLegend: View {
     }
 }
 
-private struct InspectorPanel<Content: View>: View {
-    let eyebrow: String
-    let title: String
-    let detail: String
-    let content: Content
-
-    init(
-        eyebrow: String,
-        title: String,
-        detail: String,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.eyebrow = eyebrow
-        self.title = title
-        self.detail = detail
-        self.content = content()
-    }
+private struct PendingBadge: View {
+    let start: String
+    let end: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(eyebrow)
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textSubtle)
-                    .textCase(.uppercase)
+        HStack(spacing: 8) {
+            Text("IN")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(ConsolePalette.panelBase)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(ConsolePalette.pending)
+                )
 
-                Text(title)
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textPrimary)
-
-                Text(detail)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textMuted)
-            }
-
-            content
-        }
-        .padding(18)
-        .consolePanel(radius: 28)
-    }
-}
-
-private struct ConsoleValueRow: View {
-    let label: String
-    let value: String
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text(label)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .foregroundStyle(ConsolePalette.textSubtle)
-                .frame(width: 96, alignment: .leading)
-
-            Text(value)
-                .font(.system(size: 12, weight: .medium, design: .monospaced))
+            Text(start)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .foregroundStyle(ConsolePalette.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .lineLimit(1)
+
+            Text("→")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(ConsolePalette.textSubtle)
+
+            Text(end)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .foregroundStyle(ConsolePalette.textMuted)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(ConsolePalette.subpanelFill.opacity(0.92))
+            Capsule(style: .continuous)
+                .fill(ConsolePalette.subpanelFill)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(ConsolePalette.subpanelStroke, lineWidth: 1)
+                    Capsule(style: .continuous)
+                        .strokeBorder(ConsolePalette.pending.opacity(0.4), lineWidth: 1)
                 )
         )
-    }
-}
-
-private struct PresetOptionCard: View {
-    let preset: ExportPreset
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(preset.displayName)
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ConsolePalette.textPrimary)
-
-                    Spacer(minLength: 8)
-
-                    if isSelected {
-                        Text("Active")
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundStyle(ConsolePalette.panelBase)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(ConsolePalette.highlight)
-                            )
-                    }
-                }
-
-                Text(preset.summary)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textMuted)
-                    .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(cardBackground)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(isSelected ? AnyShapeStyle(ConsolePalette.accentPanel) : AnyShapeStyle(ConsolePalette.subpanelFill))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(isSelected ? ConsolePalette.highlight : ConsolePalette.subpanelStroke, lineWidth: 1)
-            )
     }
 }
