@@ -2,6 +2,8 @@
 
 `Clipper` is a macOS SwiftUI utility for reviewing a source video, marking multiple clip ranges, and exporting each range through `ffmpeg`.
 
+For development, `Clipper` can use a system `ffmpeg`. Packaged release builds embed `ffmpeg` directly into the app bundle so exported clips work on machines that do not have Homebrew installed.
+
 The current implementation is intentionally narrow and testable:
 
 - Single-source editing session per window.
@@ -11,7 +13,9 @@ The current implementation is intentionally narrow and testable:
 - Export behavior is explicit through named presets instead of hidden defaults.
 - Runtime diagnostics are available both in the UI and in a JSONL trace log.
 
-Deeper reference material lives in [`docs/architecture.md`](docs/architecture.md) and [`docs/testing-and-observability.md`](docs/testing-and-observability.md).
+Deeper reference material lives in [`docs/architecture.md`](docs/architecture.md), [`docs/testing-and-observability.md`](docs/testing-and-observability.md), and [`docs/release-checklist.md`](docs/release-checklist.md).
+
+Released under the [MIT License](LICENSE).
 
 ## Product workflow
 
@@ -96,6 +100,7 @@ Current implementation detail:
 - Successful opens are recorded into the app's recent-file menu.
 - Export always emits `.mp4` files through `ffmpeg`.
 - Raw stream handling depends on what AVFoundation can open and what `ffmpeg` can later remux or transcode on the machine.
+- The runtime resolves `ffmpeg` in this order: `CLIPPER_FFMPEG_BIN`, bundled `Contents/Helpers/ffmpeg`, `/opt/homebrew/bin/ffmpeg`, `/usr/local/bin/ffmpeg`.
 
 ## Runtime diagnostics
 
@@ -129,7 +134,7 @@ Prerequisites:
 - macOS 14+
 - Xcode 15+
 - `xcodegen`
-- `ffmpeg` installed at `/opt/homebrew/bin/ffmpeg` or `/usr/local/bin/ffmpeg`
+- `ffmpeg` installed locally only if you are developing or packaging the app on this Mac
 
 Generate the Xcode project:
 
@@ -153,6 +158,69 @@ Open the project in Xcode if you want to drive the app interactively:
 ```sh
 open Clipper.xcodeproj
 ```
+
+## Package a distributable app
+
+Build a Release `.app` bundle with embedded `ffmpeg` and a companion zip:
+
+```sh
+./scripts/package-release.sh
+```
+
+For a signed and notarized release build:
+
+```sh
+CLIPPER_CODESIGN_IDENTITY="Developer ID Application: Peter Peirce (U8A4E46MT9)" \
+CLIPPER_NOTARY_PROFILE="Clipper" \
+./scripts/package-release.sh
+```
+
+That command produces:
+
+- `dist/Clipper.app`
+- `dist/Clipper-macOS.zip`
+
+Optional environment variables:
+
+- `CLIPPER_FFMPEG_BIN`: explicit path to the source `ffmpeg` binary to embed
+- `CLIPPER_TEAM_ID`: Apple Developer team ID used to auto-select a matching `Developer ID Application` certificate
+- `CLIPPER_CODESIGN_IDENTITY`: signing identity to use for nested code and the app bundle
+- `CLIPPER_NOTARY_PROFILE`: keychain profile name for `xcrun notarytool submit --keychain-profile`
+
+Packaging behavior:
+
+- copies a Release build into `dist/`
+- embeds `ffmpeg` at `Clipper.app/Contents/Helpers/ffmpeg`
+- copies and rewrites Homebrew-linked dylibs into `Clipper.app/Contents/Frameworks`
+- builds the intermediate Release app with ad hoc signing so packaging does not depend on local Xcode signing state
+- auto-selects a matching `Developer ID Application` certificate for the configured team when one is installed locally, otherwise falls back to ad hoc signing
+- re-signs the modified bundle
+- verifies the embedded `ffmpeg` runs from inside the packaged app
+- creates a zip for distribution
+
+This repository is configured for Apple Developer team `U8A4E46MT9`.
+
+Without a local `Developer ID Application` identity for that team, the script falls back to ad hoc signing. That produces a correct local `.app` bundle, but downloaded builds will still trigger Gatekeeper warnings until the app is signed with Developer ID and notarized.
+
+Release validation signals after a successful signed build:
+
+- `codesign -dv --verbose=4 dist/Clipper.app` shows `TeamIdentifier=U8A4E46MT9`
+- the same output shows `Notarization Ticket=stapled`
+- `dist/Clipper-macOS.zip` is the artifact to distribute
+
+## Releasing a new version
+
+Bump the version, add release notes, tag, and push:
+
+```sh
+./scripts/bump-version.sh 1.1.0
+# Edit CHANGELOG.md to add release notes for the new version
+git commit -am "Bump version to 1.1.0"
+git tag -a v1.1.0 -m "v1.1.0"
+git push origin main v1.1.0
+```
+
+Pushing a `v*` tag triggers the GitHub Actions release workflow, which runs tests, builds a signed and notarized `.app` bundle, and uploads `Clipper-macOS.zip` to a GitHub Release.
 
 ## Verification philosophy
 

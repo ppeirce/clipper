@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0535AAB1A91D0097C14AC8D1 /* ClipperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5A58FA24699EC9DBA9D85F /* ClipperApp.swift */; };
 		0A77FC0E68AE0F4D7FF8A2C7 /* AppLaunchOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA843EE7C10C45AECB5C00A8 /* AppLaunchOptions.swift */; };
+		0E105DCBEDDFAAC62A9799D0 /* FFmpegExecutableLocatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B9BEE7E9B0B7C4FE156DE2 /* FFmpegExecutableLocatorTests.swift */; };
 		0F5C176BE82BD85CF383407B /* RuntimeTraceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28DB18C5DA73764A9DCA4A1C /* RuntimeTraceStore.swift */; };
 		13F490C20F89A1C57140AB93 /* EditorReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397DA16906EEEEA7A4F273FC /* EditorReducer.swift */; };
 		147AE093CF1DCB2B24F7D8F7 /* TimecodeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A277C475B5CF59DA93D6FA /* TimecodeFormatter.swift */; };
@@ -107,6 +108,7 @@
 		137EACF51E5289F88B1C025F /* TimelineProjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineProjector.swift; sourceTree = "<group>"; };
 		1723ED4A6AA003C9B628CE18 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		1A8F08673627C2CD8C431BEC /* ClipSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipSegment.swift; sourceTree = "<group>"; };
+		27B9BEE7E9B0B7C4FE156DE2 /* FFmpegExecutableLocatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegExecutableLocatorTests.swift; sourceTree = "<group>"; };
 		28DB18C5DA73764A9DCA4A1C /* RuntimeTraceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeTraceStore.swift; sourceTree = "<group>"; };
 		3782CE15A7DAFD9B5DFDC09F /* ExportPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportPreset.swift; sourceTree = "<group>"; };
 		397DA16906EEEEA7A4F273FC /* EditorReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorReducer.swift; sourceTree = "<group>"; };
@@ -235,6 +237,7 @@
 				9BACEDCBDB2BF977577FA40F /* EditorWorkflowTests.swift */,
 				BD36DC1BABA2717EC34EF8C8 /* FFmpegClipExporterTests.swift */,
 				A6986C912D7CCF30719411BE /* FFmpegCommandBuilderTests.swift */,
+				27B9BEE7E9B0B7C4FE156DE2 /* FFmpegExecutableLocatorTests.swift */,
 				07DA49EB78A93E1ED70870B0 /* KeyboardShortcutInterpreterTests.swift */,
 				EC77FA7255A077F702358AD0 /* OpenWorkflowTests.swift */,
 				EBCC915836CA09FC375B6B33 /* RuntimeTraceStoreTests.swift */,
@@ -454,6 +457,7 @@
 				3A0FC3A9DF9E37CB1858548D /* EditorWorkflowTests.swift in Sources */,
 				FA9ADCE93F8B8666C8CF8F45 /* FFmpegClipExporterTests.swift in Sources */,
 				ABD2419D3EC9728B4B7B7428 /* FFmpegCommandBuilderTests.swift in Sources */,
+				0E105DCBEDDFAAC62A9799D0 /* FFmpegExecutableLocatorTests.swift in Sources */,
 				EC2A588947B017CBBA4FBDD8 /* KeyboardShortcutInterpreterTests.swift in Sources */,
 				C1BB5F9DC7E31A0ECB8B40DD /* OpenWorkflowTests.swift in Sources */,
 				ACC4C8173C3AA4C9E1496615 /* RuntimeTraceStoreTests.swift in Sources */,
@@ -614,7 +618,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -756,7 +760,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

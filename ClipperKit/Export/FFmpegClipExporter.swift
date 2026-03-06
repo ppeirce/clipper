@@ -16,7 +16,7 @@ enum ExportError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .missingFFmpeg:
-            return "ffmpeg was not found. Install it at /opt/homebrew/bin/ffmpeg or /usr/local/bin/ffmpeg."
+            return "ffmpeg was not found. Use a packaged Clipper.app that includes ffmpeg, or install it at /opt/homebrew/bin/ffmpeg or /usr/local/bin/ffmpeg."
         case .noClips:
             return "Create at least one clip before exporting."
         case let .processFailed(status, stderr):

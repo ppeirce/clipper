@@ -131,6 +131,13 @@ The live adapter is `AVPlayerPlaybackController`. Recent-file bookkeeping is iso
 5. `FFmpegClipExporter` runs commands serially through `ProcessRunning`.
 6. Export progress and failures are traced.
 
+`ffmpeg` resolution order is explicit:
+
+- `CLIPPER_FFMPEG_BIN` override
+- bundled `Clipper.app/Contents/Helpers/ffmpeg`
+- `/opt/homebrew/bin/ffmpeg`
+- `/usr/local/bin/ffmpeg`
+
 The exporter does not currently parallelize jobs. That is deliberate for the first iteration:
 
 - serial execution keeps trace ordering obvious

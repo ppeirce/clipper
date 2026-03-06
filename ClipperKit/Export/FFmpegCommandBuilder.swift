@@ -32,16 +32,45 @@ struct FFmpegCommandBuilder {
 }
 
 enum FFmpegExecutableLocator {
-    static func locate(fileManager: FileManager = .default) -> URL? {
-        let candidatePaths = [
+    static func locate(
+        fileManager: FileManager = .default,
+        bundleURL: URL = Bundle.main.bundleURL,
+        environment: [String: String] = ProcessInfo.processInfo.environment,
+        systemCandidatePaths: [String] = [
             "/opt/homebrew/bin/ffmpeg",
             "/usr/local/bin/ffmpeg"
         ]
-
-        for path in candidatePaths where fileManager.isExecutableFile(atPath: path) {
-            return URL(fileURLWithPath: path)
+    ) -> URL? {
+        for candidateURL in candidateURLs(
+            bundleURL: bundleURL,
+            environment: environment,
+            systemCandidatePaths: systemCandidatePaths
+        ) where fileManager.isExecutableFile(atPath: candidateURL.path) {
+            return candidateURL
         }
 
         return nil
+    }
+
+    static func candidateURLs(
+        bundleURL: URL,
+        environment: [String: String],
+        systemCandidatePaths: [String]
+    ) -> [URL] {
+        var candidates: [URL] = []
+
+        if let overridePath = environment["CLIPPER_FFMPEG_BIN"], !overridePath.isEmpty {
+            candidates.append(URL(fileURLWithPath: overridePath))
+        }
+
+        candidates.append(
+            bundleURL
+                .appendingPathComponent("Contents", isDirectory: true)
+                .appendingPathComponent("Helpers", isDirectory: true)
+                .appendingPathComponent("ffmpeg", isDirectory: false)
+        )
+
+        candidates.append(contentsOf: systemCandidatePaths.map(URL.init(fileURLWithPath:)))
+        return candidates
     }
 }

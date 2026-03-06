@@ -46,6 +46,23 @@ xcodebuild \
   test
 ```
 
+## Release packaging verification
+
+Distribution packaging is verified outside the XCTest suite with:
+
+```sh
+./scripts/package-release.sh
+```
+
+That script validates:
+
+- Release build completion
+- bundled `ffmpeg` embedding
+- Homebrew dylib rewriting into `Contents/Frameworks`
+- embedded `ffmpeg` startup from inside the packaged app
+- zip creation for distribution
+- notarization submission and stapling when `CLIPPER_NOTARY_PROFILE` is configured
+
 ## Fixture-mode test harness
 
 UI tests launch the app with:
