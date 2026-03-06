@@ -27,7 +27,9 @@ final class FFmpegCommandBuilderTests: XCTestCase {
             "-crf", "23",
             "-c:a", "aac",
             "-b:a", "192k",
-            "-movflags", "+faststart",
+            "-movflags", "+faststart+negative_cts_offsets",
+            "-avoid_negative_ts", "make_zero",
+            "-use_editlist", "0",
             "/tmp/output.mp4"
         ])
     }
@@ -48,6 +50,22 @@ final class FFmpegCommandBuilderTests: XCTestCase {
         XCTAssertTrue(command.arguments.contains("28"))
     }
 
+    func testBuilderResetsTimestampsToAvoidBlackLeadIn() {
+        let builder = FFmpegCommandBuilder(executableURL: URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg"))
+        let job = ExportJob(
+            clip: ClipSegment(start: .clipperSeconds(2), end: .clipperSeconds(6)),
+            index: 1,
+            inputURL: URL(fileURLWithPath: "/tmp/My Source.mov"),
+            outputURL: URL(fileURLWithPath: "/tmp/output.mp4")
+        )
+
+        let command = builder.command(for: job, preset: .fastH264)
+
+        XCTAssertTrue(command.arguments.contains("+faststart+negative_cts_offsets"))
+        XCTAssertEqual(argumentValue(after: "-avoid_negative_ts", in: command.arguments), "make_zero")
+        XCTAssertEqual(argumentValue(after: "-use_editlist", in: command.arguments), "0")
+    }
+
     func testPlannerAvoidsExistingFilenames() {
         let jobs = ClipExportPlanner.plan(
             sourceURL: URL(fileURLWithPath: "/tmp/source.mov"),
@@ -63,5 +81,12 @@ final class FFmpegCommandBuilderTests: XCTestCase {
             "source_clip_01_2.mp4",
             "source_clip_02.mp4"
         ])
+    }
+
+    private func argumentValue(after flag: String, in arguments: [String]) -> String? {
+        guard let index = arguments.firstIndex(of: flag), arguments.indices.contains(index + 1) else {
+            return nil
+        }
+        return arguments[index + 1]
     }
 }

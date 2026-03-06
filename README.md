@@ -63,7 +63,11 @@ The exporter always adds:
 - `-loglevel error`
 - `-map 0:v:0`
 - `-map 0:a?`
-- `-movflags +faststart`
+- `-movflags +faststart+negative_cts_offsets`
+- `-avoid_negative_ts make_zero`
+- `-use_editlist 0`
+
+These flags keep the exported MP4s zero-based and avoid MP4 edit-list lead-ins that can show up as black first frames in Apple playback stacks.
 
 Output filenames are deterministic and collision-safe:
 

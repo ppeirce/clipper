@@ -21,7 +21,9 @@ struct FFmpegCommandBuilder {
                 "-map", "0:v:0",
                 "-map", "0:a?",
             ] + preset.ffmpegArguments + [
-                "-movflags", "+faststart",
+                "-movflags", "+faststart+negative_cts_offsets",
+                "-avoid_negative_ts", "make_zero",
+                "-use_editlist", "0",
                 job.outputURL.path
             ],
             outputURL: job.outputURL
