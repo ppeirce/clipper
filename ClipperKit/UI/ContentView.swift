@@ -868,6 +868,20 @@ public struct ClipperCommands: Commands {
     public init() {}
 
     public var body: some Commands {
+        CommandGroup(replacing: .undoRedo) {
+            Button("Undo") {
+                viewModel?.undoClipChange()
+            }
+            .keyboardShortcut("z", modifiers: [.command])
+            .disabled(!(viewModel?.canUndoClipChange ?? false))
+
+            Button("Redo") {
+                viewModel?.redoClipChange()
+            }
+            .keyboardShortcut("Z", modifiers: [.command, .shift])
+            .disabled(!(viewModel?.canRedoClipChange ?? false))
+        }
+
         CommandGroup(replacing: .newItem) {
             Button("Open...") {
                 viewModel?.openVideo()

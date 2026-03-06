@@ -24,6 +24,14 @@ final class ClipperViewModel: ObservableObject {
         state.asset != nil
     }
 
+    var canUndoClipChange: Bool {
+        state.canUndoClipChange
+    }
+
+    var canRedoClipChange: Bool {
+        state.canRedoClipChange
+    }
+
     init(
         playbackController: PlaybackControlling = AVPlayerPlaybackController(),
         exporter: ClipExporting? = nil,
@@ -228,6 +236,24 @@ final class ClipperViewModel: ObservableObject {
     func clearClips() {
         apply(.clearClips)
         recordTrace(category: .clip, message: "Cleared clips", details: nil)
+    }
+
+    func undoClipChange() {
+        let previousSnapshot = state.clipDefinitionSnapshot
+        apply(.undoClipChange)
+        guard state.clipDefinitionSnapshot != previousSnapshot else {
+            return
+        }
+        recordTrace(category: .clip, message: "Undid clip change", details: clipHistoryTraceDetails())
+    }
+
+    func redoClipChange() {
+        let previousSnapshot = state.clipDefinitionSnapshot
+        apply(.redoClipChange)
+        guard state.clipDefinitionSnapshot != previousSnapshot else {
+            return
+        }
+        recordTrace(category: .clip, message: "Redid clip change", details: clipHistoryTraceDetails())
     }
 
     func clearRecentVideos() {
@@ -442,5 +468,21 @@ final class ClipperViewModel: ObservableObject {
             message: message,
             details: TimecodeFormatter.displayString(for: state.currentTime)
         )
+    }
+
+    private func clipHistoryTraceDetails() -> String? {
+        if let selectedClip = state.selectedClip {
+            return "\(TimecodeFormatter.displayString(for: selectedClip.start)) - \(TimecodeFormatter.displayString(for: selectedClip.end))"
+        }
+
+        if let pendingInPoint = state.pendingInPoint {
+            return "IN \(TimecodeFormatter.displayString(for: pendingInPoint))"
+        }
+
+        if state.clips.isEmpty {
+            return "No clips"
+        }
+
+        return "\(state.clips.count) clip(s)"
     }
 }

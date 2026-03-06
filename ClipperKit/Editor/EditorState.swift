@@ -33,18 +33,45 @@ extension PlaybackSnapshot: Equatable {
     }
 }
 
+struct ClipDefinitionSnapshot {
+    var pendingInPoint: CMTime?
+    var clips: [ClipSegment]
+    var selectedClipID: UUID?
+}
+
+extension ClipDefinitionSnapshot: Equatable {
+    static func == (lhs: ClipDefinitionSnapshot, rhs: ClipDefinitionSnapshot) -> Bool {
+        ((lhs.pendingInPoint == nil && rhs.pendingInPoint == nil) ||
+            (lhs.pendingInPoint?.isEqualTo(rhs.pendingInPoint ?? .invalid) ?? false)) &&
+        lhs.clips == rhs.clips &&
+        lhs.selectedClipID == rhs.selectedClipID
+    }
+}
+
 struct EditorState {
+    static let maximumClipHistoryDepth = 100
+
     var asset: VideoAssetContext?
     var currentTime: CMTime = .zero
     var isPlaying = false
     var pendingInPoint: CMTime?
     var clips: [ClipSegment] = []
     var selectedClipID: UUID?
+    var undoHistory: [ClipDefinitionSnapshot] = []
+    var redoHistory: [ClipDefinitionSnapshot] = []
     var exportPreset: ExportPreset = .fastH264
     var lastError: String?
 
     var canExport: Bool {
         asset != nil && !clips.isEmpty
+    }
+
+    var canUndoClipChange: Bool {
+        !undoHistory.isEmpty
+    }
+
+    var canRedoClipChange: Bool {
+        !redoHistory.isEmpty
     }
 
     var selectedClip: ClipSegment? {
@@ -60,6 +87,14 @@ struct EditorState {
         }
         return clips.firstIndex { $0.id == selectedClipID }
     }
+
+    var clipDefinitionSnapshot: ClipDefinitionSnapshot {
+        ClipDefinitionSnapshot(
+            pendingInPoint: pendingInPoint,
+            clips: clips,
+            selectedClipID: selectedClipID
+        )
+    }
 }
 
 extension EditorState: Equatable {
@@ -71,6 +106,8 @@ extension EditorState: Equatable {
             (lhs.pendingInPoint?.isEqualTo(rhs.pendingInPoint ?? .invalid) ?? false)) &&
         lhs.clips == rhs.clips &&
         lhs.selectedClipID == rhs.selectedClipID &&
+        lhs.undoHistory == rhs.undoHistory &&
+        lhs.redoHistory == rhs.redoHistory &&
         lhs.exportPreset == rhs.exportPreset &&
         lhs.lastError == rhs.lastError
     }
@@ -95,6 +132,8 @@ enum EditorAction: Equatable {
     case setExportPreset(ExportPreset)
     case clearPendingInPoint
     case clearClips
+    case undoClipChange
+    case redoClipChange
 }
 
 enum EditorEffect: Equatable {

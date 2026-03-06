@@ -43,7 +43,7 @@ That leads to four main constraints:
 
 ### `ClipperKit/Editor`
 
-- `EditorState.swift`: editor data model, actions, and reducer effects.
+- `EditorState.swift`: editor data model, clip-definition history, actions, and reducer effects.
 - `EditorReducer.swift`: clip creation, transport, selection, editing, and error rules.
 - `ClipSegment.swift`: clip identity, normalization, and duration.
 - `TimelineProjector.swift`: timeline math for ribbon rendering.
@@ -114,6 +114,13 @@ The live adapter is `AVPlayerPlaybackController`. Recent-file bookkeeping is iso
 3. `Set Start To Playhead` or `Set End To Playhead` rewrites that boundary.
 4. The reducer normalizes the candidate clip and re-checks overlap constraints.
 5. Success or rejection is surfaced in both status text and runtime traces.
+
+### Undo and redo
+
+1. Clip-definition mutations push a `ClipDefinitionSnapshot` into reducer-owned undo history.
+2. Non-editing actions like playback seeks and transport updates do not enter that history.
+3. `Undo` and `Redo` in the Edit menu replay only clip-definition state: pending in-point, saved clips, and clip selection.
+4. Loading a new video resets the clip-definition history with the rest of the editor state.
 
 ## Export flow
 

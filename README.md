@@ -35,6 +35,8 @@ Deeper reference material lives in [`docs/architecture.md`](docs/architecture.md
 | `I` | Mark clip start at the current playhead |
 | `O` | Mark clip end and create a clip |
 | `Cmd + O` | Open a source video |
+| `Cmd + Z` | Undo the last clip-definition change |
+| `Shift + Cmd + Z` | Redo the last undone clip-definition change |
 
 The footer mirrors these controls in the running app.
 
@@ -51,6 +53,7 @@ Open paths currently supported in the app:
 - A clip end must be strictly after its start.
 - Saved clips are kept sorted by start time.
 - Clip edits that would overlap another saved clip are rejected.
+- Undo and redo only track clip-definition mutations: in/out marking, clip creation, clip edits, clip deletion, and clear-all.
 - Creating or editing a clip updates the current selection.
 - Deleting a clip keeps the selection on the next valid clip when possible.
 

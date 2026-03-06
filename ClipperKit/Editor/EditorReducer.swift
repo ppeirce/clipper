@@ -45,8 +45,14 @@ enum EditorReducer {
             guard state.asset != nil else {
                 return []
             }
+            let nextPendingInPoint = state.currentTime
+            guard !timesEqual(state.pendingInPoint, nextPendingInPoint) else {
+                state.lastError = nil
+                return []
+            }
+            pushUndoSnapshot(into: &state)
             state.lastError = nil
-            state.pendingInPoint = state.currentTime
+            state.pendingInPoint = nextPendingInPoint
             return []
 
         case .markOut:
@@ -61,6 +67,7 @@ enum EditorReducer {
                 state.lastError = "Clips cannot overlap existing ranges."
                 return []
             }
+            pushUndoSnapshot(into: &state)
             state.lastError = nil
             state.pendingInPoint = nil
             state.clips.append(clip)
@@ -77,6 +84,7 @@ enum EditorReducer {
             guard let selectedClipIndex = state.selectedClipIndex else {
                 return []
             }
+            pushUndoSnapshot(into: &state)
             state.clips.remove(at: selectedClipIndex)
             state.lastError = nil
 
@@ -109,7 +117,12 @@ enum EditorReducer {
                 state.lastError = "Clips cannot overlap existing ranges."
                 return []
             }
+            guard normalizedClip != state.clips[selectedClipIndex] else {
+                state.lastError = nil
+                return []
+            }
 
+            pushUndoSnapshot(into: &state)
             state.clips[selectedClipIndex] = normalizedClip
             state.clips.sort { CMTimeCompare($0.start, $1.start) < 0 }
             state.selectedClipID = normalizedClip.id
@@ -122,14 +135,42 @@ enum EditorReducer {
             return []
 
         case .clearPendingInPoint:
+            guard state.pendingInPoint != nil else {
+                state.lastError = nil
+                return []
+            }
+            pushUndoSnapshot(into: &state)
             state.pendingInPoint = nil
             state.lastError = nil
             return []
 
         case .clearClips:
+            guard !state.clips.isEmpty || state.pendingInPoint != nil || state.selectedClipID != nil else {
+                state.lastError = nil
+                return []
+            }
+            pushUndoSnapshot(into: &state)
             state.clips = []
             state.pendingInPoint = nil
             state.selectedClipID = nil
+            state.lastError = nil
+            return []
+
+        case .undoClipChange:
+            guard let snapshot = state.undoHistory.popLast() else {
+                return []
+            }
+            state.redoHistory.append(state.clipDefinitionSnapshot)
+            restore(snapshot, into: &state)
+            state.lastError = nil
+            return []
+
+        case .redoClipChange:
+            guard let snapshot = state.redoHistory.popLast() else {
+                return []
+            }
+            state.undoHistory.append(state.clipDefinitionSnapshot)
+            restore(snapshot, into: &state)
             state.lastError = nil
             return []
         }
@@ -142,6 +183,31 @@ enum EditorReducer {
             }
             return CMTimeCompare(clip.start, existingClip.end) < 0 &&
                 CMTimeCompare(clip.end, existingClip.start) > 0
+        }
+    }
+
+    private static func pushUndoSnapshot(into state: inout EditorState) {
+        state.undoHistory.append(state.clipDefinitionSnapshot)
+        if state.undoHistory.count > EditorState.maximumClipHistoryDepth {
+            state.undoHistory.removeFirst(state.undoHistory.count - EditorState.maximumClipHistoryDepth)
+        }
+        state.redoHistory.removeAll()
+    }
+
+    private static func restore(_ snapshot: ClipDefinitionSnapshot, into state: inout EditorState) {
+        state.pendingInPoint = snapshot.pendingInPoint
+        state.clips = snapshot.clips
+        state.selectedClipID = snapshot.selectedClipID
+    }
+
+    private static func timesEqual(_ lhs: CMTime?, _ rhs: CMTime?) -> Bool {
+        switch (lhs, rhs) {
+        case (nil, nil):
+            return true
+        case let (left?, right?):
+            return left.isEqualTo(right)
+        default:
+            return false
         }
     }
 }

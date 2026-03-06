@@ -18,7 +18,7 @@ The goal is not just "some tests." The goal is fast, repeatable evidence that ed
 `ClipperTests` currently covers:
 
 - `EditorReducerTests.swift`: reducer transport and clip marking behavior
-- `EditorWorkflowTests.swift`: clip selection, deletion, boundary editing, and overlap rejection flows
+- `EditorWorkflowTests.swift`: clip selection, deletion, boundary editing, overlap rejection, and undo/redo flows
 - `KeyboardShortcutInterpreterTests.swift`: keyboard command mapping
 - `OpenWorkflowTests.swift`: supported-source filtering, direct URL opens, and recent-file bookkeeping
 - `TimelineProjectorTests.swift`: ribbon geometry projection
@@ -111,6 +111,7 @@ Current high-value traces include:
 - video load success and failure
 - play/pause, seek, and frame stepping
 - clip selection, creation, edit success, edit rejection, deletion, and clear-all
+- clip undo and redo operations with the restored boundary state
 - export preset changes
 - export queueing, per-clip export progress, final completion, and failures
 
