@@ -13,12 +13,12 @@ final class ClipperUITests: XCTestCase {
 
         let clipCount = app.staticTexts["clip-count"]
         XCTAssertTrue(clipCount.waitForExistence(timeout: 2))
-        XCTAssertEqual(displayedText(of: clipCount), "2 clip(s)")
+        XCTAssertEqual(displayedText(of: clipCount), "2 clips")
 
         app.buttons["clip-chip-1"].click()
         XCTAssertTrue(app.buttons["delete-selected-clip"].isEnabled)
         app.buttons["delete-selected-clip"].click()
-        XCTAssertEqual(displayedText(of: clipCount), "1 clip(s)")
+        XCTAssertEqual(displayedText(of: clipCount), "1 clip")
     }
 
     @MainActor

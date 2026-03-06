@@ -27,4 +27,15 @@ final class KeyboardShortcutInterpreterTests: XCTestCase {
             .markOut
         )
     }
+
+    func testMapsDeleteKeysToSelectedClipDeletion() {
+        XCTAssertEqual(
+            KeyboardShortcutInterpreter.command(for: KeyboardInput(keyCode: 51, characters: "", isShiftPressed: false)),
+            .deleteSelectedClip
+        )
+        XCTAssertEqual(
+            KeyboardShortcutInterpreter.command(for: KeyboardInput(keyCode: 117, characters: "", isShiftPressed: false)),
+            .deleteSelectedClip
+        )
+    }
 }

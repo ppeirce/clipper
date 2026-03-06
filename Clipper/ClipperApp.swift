@@ -8,6 +8,9 @@ struct ClipperApp: App {
             ContentView()
                 .frame(minWidth: 1000, minHeight: 700)
         }
+        .commands {
+            ClipperCommands()
+        }
         .defaultSize(width: 1200, height: 820)
     }
 }

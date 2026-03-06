@@ -124,6 +124,8 @@ final class ClipperViewModel: ObservableObject {
             markIn()
         case .markOut:
             markOut()
+        case .deleteSelectedClip:
+            deleteSelectedClip()
         }
 
         return true

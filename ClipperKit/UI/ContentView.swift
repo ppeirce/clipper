@@ -34,6 +34,8 @@ public struct ContentView: View {
             KeyboardCaptureView(onKeyDown: viewModel.handle)
                 .frame(width: 0, height: 0)
         )
+        .focusedSceneObject(viewModel)
+        .focusedSceneValue(\.clipperShowsDiagnostics, $showsDiagnostics)
     }
 
     @ViewBuilder
@@ -54,7 +56,7 @@ public struct ContentView: View {
     }
 
     private var sourceName: String {
-        viewModel.state.asset?.url.lastPathComponent ?? "No source loaded"
+        viewModel.state.asset?.url.deletingPathExtension().lastPathComponent ?? "No source"
     }
 
     private var currentTimeString: String {
@@ -69,7 +71,8 @@ public struct ContentView: View {
     }
 
     private var clipCountLabel: String {
-        "\(viewModel.state.clips.count) clip(s)"
+        let count = viewModel.state.clips.count
+        return count == 1 ? "1 clip" : "\(count) clips"
     }
 
     private var statusTone: ConsoleStatusTone {
@@ -108,19 +111,43 @@ public struct ContentView: View {
         }
     }
 
+    private var utilityStatusDetail: String? {
+        switch statusTone {
+        case .error, .exporting, .marking, .selection:
+            return viewModel.statusMessage
+        case .idle, .ready:
+            return nil
+        }
+    }
+
     @ViewBuilder
     private func utilityBar(compact: Bool) -> some View {
         if compact {
             VStack(alignment: .leading, spacing: 10) {
-                utilityHeader
-                utilityActions
+                HStack(spacing: 10) {
+                    utilityIdentity
+                    Spacer(minLength: 8)
+                    utilityActions
+                }
+
+                HStack(spacing: 8) {
+                    utilitySession
+                    if let utilityStatusDetail {
+                        utilityStatusDetailView(utilityStatusDetail)
+                    }
+                }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .consolePanel(radius: 22)
         } else {
             HStack(spacing: 12) {
-                utilityHeader
+                utilityIdentity
+                Spacer(minLength: 12)
+                utilitySession
+                if let utilityStatusDetail {
+                    utilityStatusDetailView(utilityStatusDetail)
+                }
                 Spacer(minLength: 12)
                 utilityActions
             }
@@ -130,7 +157,7 @@ public struct ContentView: View {
         }
     }
 
-    private var utilityHeader: some View {
+    private var utilityIdentity: some View {
         HStack(spacing: 10) {
             Text("Clipper")
                 .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -140,24 +167,32 @@ public struct ContentView: View {
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                 .foregroundStyle(ConsolePalette.textMuted)
                 .lineLimit(1)
-
-            StatusToken(label: statusShortLabel, tone: statusTone)
-
-            Text(viewModel.statusMessage)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(statusTone.messageColor)
-                .lineLimit(1)
-                .accessibilityLabel(viewModel.statusMessage)
-                .accessibilityIdentifier("status-message")
+                .truncationMode(.middle)
         }
+        .frame(maxWidth: 620, alignment: .leading)
+    }
+
+    private var utilitySession: some View {
+        HStack(spacing: 8) {
+            StatusToken(label: statusShortLabel, tone: statusTone)
+            CountBadge(value: clipCountLabel)
+            PresetBadge(label: viewModel.state.exportPreset.displayName)
+        }
+    }
+
+    @ViewBuilder
+    private func utilityStatusDetailView(_ detail: String) -> some View {
+        Text(detail)
+            .font(.system(size: 12, weight: .medium, design: .rounded))
+            .foregroundStyle(statusTone.messageColor)
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .accessibilityLabel(detail)
+            .accessibilityIdentifier("status-message")
     }
 
     private var utilityActions: some View {
         HStack(spacing: 8) {
-            CountBadge(value: clipCountLabel)
-
-            presetMenu
-
             Button("Open", action: viewModel.openVideo)
                 .keyboardShortcut("o", modifiers: [.command])
                 .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
@@ -167,54 +202,7 @@ public struct ContentView: View {
                 .buttonStyle(ConsoleButtonStyle(role: .primary, compact: true))
                 .disabled(!viewModel.state.canExport || viewModel.isExporting)
                 .accessibilityIdentifier("export-clips")
-
-            Menu {
-                Button(showsDiagnostics ? "Hide Diagnostics" : "Show Diagnostics") {
-                    showsDiagnostics.toggle()
-                }
-
-                Divider()
-
-                Button("Clear Clips", action: viewModel.clearClips)
-                    .disabled(viewModel.state.clips.isEmpty)
-            } label: {
-                Text("More")
-            }
-            .menuStyle(.borderlessButton)
-            .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
         }
-    }
-
-    private var presetMenu: some View {
-        Menu {
-            ForEach(ExportPreset.allCases) { preset in
-                Button {
-                    viewModel.setExportPreset(preset)
-                } label: {
-                    HStack {
-                        Text(preset.displayName)
-                        if viewModel.state.exportPreset == preset {
-                            Spacer()
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-                .accessibilityIdentifier(preset.buttonIdentifier)
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Text(viewModel.state.exportPreset.displayName)
-                    .lineLimit(1)
-                    .accessibilityLabel("Preset: \(viewModel.state.exportPreset.displayName)")
-                    .accessibilityIdentifier("selected-export-preset")
-
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 10, weight: .bold))
-            }
-        }
-        .menuStyle(.borderlessButton)
-        .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
-        .help(viewModel.state.exportPreset.summary)
     }
 
     private func playerConsole(playerHeight: CGFloat) -> some View {
@@ -252,8 +240,8 @@ public struct ContentView: View {
                 onDeleteSelectedClip: viewModel.deleteSelectedClip
             )
         }
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .consolePanel(radius: 28)
+        .clipShape(Rectangle())
+        .consolePanel(radius: 0)
     }
 
     private var playerOverlay: some View {
@@ -338,6 +326,20 @@ private struct CompactRail: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            RibbonView(
+                duration: durationTime,
+                currentTime: currentTimeValue,
+                clips: clips,
+                selectedClipID: selectedClipID,
+                pendingInPoint: pendingInPoint,
+                onSelectClip: onSelectClip,
+                onScrub: onScrub,
+                onScrubEnd: onScrubEnd
+            )
+
+            TimelineScaleStrip(duration: durationTime)
+                .padding(.horizontal, 14)
+
             HStack(spacing: 8) {
                 RailButton(label: "-1f", action: onStepBackward)
                 RailButton(label: "-5s", action: onSeekBackward)
@@ -364,17 +366,7 @@ private struct CompactRail: View {
                 RailButton(label: "I", role: pendingInPoint == nil ? .secondary : .accent, action: onMarkIn)
                 RailButton(label: "O", role: .primary, action: onMarkOut)
             }
-
-            RibbonView(
-                duration: durationTime,
-                currentTime: currentTimeValue,
-                clips: clips,
-                selectedClipID: selectedClipID,
-                pendingInPoint: pendingInPoint,
-                onSelectClip: onSelectClip,
-                onScrub: onScrub,
-                onScrubEnd: onScrubEnd
-            )
+            .padding(.horizontal, 14)
 
             if let selectedClip {
                 HStack(spacing: 8) {
@@ -391,6 +383,7 @@ private struct CompactRail: View {
 
                     Spacer(minLength: 0)
                 }
+                .padding(.horizontal, 14)
             } else if let pendingInPoint {
                 HStack(spacing: 8) {
                     PendingBadge(
@@ -399,9 +392,9 @@ private struct CompactRail: View {
                     )
                     Spacer(minLength: 0)
                 }
+                .padding(.horizontal, 14)
             }
         }
-        .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .background(
             LinearGradient(
@@ -413,12 +406,65 @@ private struct CompactRail: View {
                 endPoint: .bottom
             )
         )
+        .padding(.bottom, 12)
         .overlay(alignment: .top) {
             Rectangle()
                 .fill(Color.white.opacity(0.05))
                 .frame(height: 1)
         }
     }
+}
+
+private struct TimelineScaleStrip: View {
+    let duration: CMTime
+
+    private let stepCount = 4
+
+    var body: some View {
+        let labels = makeLabels()
+
+        HStack(spacing: 0) {
+            ForEach(labels) { label in
+                Text(label.value)
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(ConsolePalette.textSubtle)
+                    .frame(maxWidth: .infinity, alignment: label.alignment)
+            }
+        }
+    }
+
+    private func makeLabels() -> [ScaleLabel] {
+        let safeDuration = max(duration.secondsValue, 0)
+
+        return (0...stepCount).map { index in
+            let ratio = Double(index) / Double(stepCount)
+            let seconds = safeDuration * ratio
+            return ScaleLabel(
+                id: index,
+                value: shortLabel(for: seconds),
+                alignment: index == 0 ? .leading : (index == stepCount ? .trailing : .center)
+            )
+        }
+    }
+
+    private func shortLabel(for seconds: Double) -> String {
+        let roundedSeconds = max(0, Int(seconds.rounded()))
+        let hours = roundedSeconds / 3_600
+        let minutes = (roundedSeconds % 3_600) / 60
+        let remainingSeconds = roundedSeconds % 60
+
+        if hours > 0 {
+            return String(format: "%02d:%02d:%02d", hours, minutes, remainingSeconds)
+        }
+
+        return String(format: "%02d:%02d", minutes, remainingSeconds)
+    }
+}
+
+private struct ScaleLabel: Identifiable {
+    let id: Int
+    let value: String
+    let alignment: Alignment
 }
 
 private enum ConsoleStatusTone: Equatable {
@@ -706,6 +752,28 @@ private struct CountBadge: View {
     }
 }
 
+private struct PresetBadge: View {
+    let label: String
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: 11, weight: .semibold, design: .rounded))
+            .foregroundStyle(ConsolePalette.textMuted)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(Color.white.opacity(0.035))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(ConsolePalette.highlight.opacity(0.22), lineWidth: 1)
+                    )
+            )
+            .accessibilityLabel("Preset: \(label)")
+            .accessibilityIdentifier("selected-export-preset")
+    }
+}
+
 private struct OverlayBadge: View {
     let label: String
     let emphasis: Color
@@ -762,6 +830,66 @@ private struct SelectionBadge: View {
                     Capsule(style: .continuous)
                         .strokeBorder(ConsolePalette.subpanelStroke, lineWidth: 1)
                 )
+        )
+    }
+}
+
+private struct ClipperShowsDiagnosticsKey: FocusedValueKey {
+    typealias Value = Binding<Bool>
+}
+
+extension FocusedValues {
+    var clipperShowsDiagnostics: Binding<Bool>? {
+        get { self[ClipperShowsDiagnosticsKey.self] }
+        set { self[ClipperShowsDiagnosticsKey.self] = newValue }
+    }
+}
+
+public struct ClipperCommands: Commands {
+    @FocusedObject private var viewModel: ClipperViewModel?
+    @FocusedBinding(\.clipperShowsDiagnostics) private var showsDiagnostics: Bool?
+
+    public init() {}
+
+    public var body: some Commands {
+        CommandMenu("Preset") {
+            Picker("Export Preset", selection: exportPresetSelection) {
+                ForEach(ExportPreset.allCases) { preset in
+                    Text(preset.displayName)
+                        .tag(preset)
+                }
+            }
+            .disabled(viewModel == nil)
+        }
+
+        CommandMenu("Session") {
+            Toggle("Show Diagnostics", isOn: diagnosticsSelection)
+                .disabled(showsDiagnostics == nil)
+
+            Divider()
+
+            Button("Clear Clips") {
+                viewModel?.clearClips()
+            }
+            .disabled(viewModel?.state.clips.isEmpty ?? true)
+        }
+    }
+
+    private var exportPresetSelection: Binding<ExportPreset> {
+        Binding(
+            get: { viewModel?.state.exportPreset ?? .fastH264 },
+            set: { preset in
+                viewModel?.setExportPreset(preset)
+            }
+        )
+    }
+
+    private var diagnosticsSelection: Binding<Bool> {
+        Binding(
+            get: { showsDiagnostics ?? false },
+            set: { isShown in
+                showsDiagnostics = isShown
+            }
         )
     }
 }

@@ -11,115 +11,150 @@ struct RibbonView: View {
     let onScrub: (CMTime) -> Void
     let onScrubEnd: (CMTime) -> Void
 
-    private let horizontalInset: CGFloat = 12
-    private let trackHeight: CGFloat = 52
-    private let segmentHeight: CGFloat = 36
+    private let trackHeight: CGFloat = 40
+    private let segmentHeight: CGFloat = 28
     private let minimumSegmentWidth: CGFloat = 48
-    private let rulerStepCount: Int = 4
+    private let segmentCornerRadius: CGFloat = 12
+    private let trackVerticalInset: CGFloat = 6
+    private let playheadLineWidth: CGFloat = 3
+    private let playheadHandleSize: CGFloat = 8
 
     var body: some View {
         GeometryReader { geometry in
-            let trackWidth = max(0, geometry.size.width - (horizontalInset * 2))
+            let trackWidth = max(0, geometry.size.width)
             let layout = TimelineProjector.project(
                 duration: duration,
                 currentTime: currentTime,
                 clips: clips,
                 width: trackWidth
             )
-            let ticks = makeRulerTicks(trackWidth: trackWidth)
             let playheadX = clampedPlayheadX(layout.playheadX, trackWidth: trackWidth)
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 0) {
-                    ForEach(ticks) { tick in
-                        Text(tick.label)
-                            .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(ConsolePalette.textSubtle)
-                            .frame(maxWidth: .infinity, alignment: tick.alignment)
-                    }
-                }
-                .padding(.horizontal, 2)
+            track(
+                trackWidth: trackWidth,
+                layout: layout,
+                playheadX: playheadX
+            )
+        }
+        .frame(height: trackHeight)
+    }
 
-                ZStack(alignment: .topLeading) {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(trackBackground)
+    private func track(trackWidth: CGFloat, layout: TimelineLayout, playheadX: CGFloat) -> some View {
+        let trackShape = Rectangle()
 
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
+        return ZStack(alignment: .topLeading) {
+            trackShape
+                .fill(trackBackground)
 
-                    ForEach(ticks) { tick in
-                        Rectangle()
-                            .fill(tick.isTerminal ? ConsolePalette.highlight.opacity(0.22) : Color.white.opacity(0.05))
-                            .frame(width: 1, height: trackHeight - 10)
-                            .offset(x: tick.x + horizontalInset, y: 5)
-                    }
+            ZStack(alignment: .topLeading) {
+                trackBed(trackWidth: trackWidth)
+                pendingRangeLayer(trackWidth: trackWidth)
+                scrubSurface(trackWidth: trackWidth)
+                clipLayer(trackWidth: trackWidth, layout: layout)
+                playheadLayer(playheadX: playheadX)
+            }
+            .frame(width: trackWidth, height: trackHeight, alignment: .topLeading)
+            .clipShape(trackShape)
 
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Color.white.opacity(0.03))
-                        .frame(height: segmentHeight)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .strokeBorder(Color.white.opacity(0.05), lineWidth: 1)
+            trackShape
+                .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
+        }
+        .frame(width: trackWidth, height: trackHeight, alignment: .topLeading)
+        .contentShape(trackShape)
+    }
+
+    private func trackBed(trackWidth: CGFloat) -> some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.03))
+            .overlay(
+                Rectangle()
+                    .strokeBorder(Color.white.opacity(0.05), lineWidth: 1)
+            )
+            .frame(width: trackWidth, height: segmentHeight, alignment: .leading)
+            .offset(y: trackVerticalInset)
+    }
+
+    @ViewBuilder
+    private func pendingRangeLayer(trackWidth: CGFloat) -> some View {
+        if let pendingFrame = pendingFrame(trackWidth: trackWidth) {
+            Rectangle()
+                .fill(ConsolePalette.pending.opacity(0.15))
+                .overlay(
+                    Rectangle()
+                        .strokeBorder(
+                            ConsolePalette.pending.opacity(0.42),
+                            style: StrokeStyle(lineWidth: 1, dash: [5, 4])
                         )
-                        .offset(x: horizontalInset, y: 8)
+                )
+                .frame(width: max(6, pendingFrame.width), height: segmentHeight)
+                .position(
+                    x: pendingFrame.minX + (pendingFrame.width / 2),
+                    y: trackVerticalInset + (segmentHeight / 2)
+                )
+        }
+    }
 
-                    if let pendingFrame = pendingFrame(trackWidth: trackWidth) {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(ConsolePalette.pending.opacity(0.15))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .strokeBorder(
-                                        ConsolePalette.pending.opacity(0.42),
-                                        style: StrokeStyle(lineWidth: 1, dash: [5, 4])
-                                    )
-                            )
-                            .frame(width: max(6, pendingFrame.width), height: segmentHeight)
-                            .offset(x: pendingFrame.minX + horizontalInset, y: 8)
+    private func scrubSurface(trackWidth: CGFloat) -> some View {
+        Rectangle()
+            .fill(Color.clear)
+            .frame(width: trackWidth, height: segmentHeight)
+            .offset(y: trackVerticalInset)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        onScrub(time(for: value.location.x, trackWidth: trackWidth))
                     }
-
-                    scrubSurface(trackWidth: trackWidth)
-                        .offset(x: horizontalInset, y: 8)
-
-                    ForEach(Array(clips.enumerated()), id: \.element.id) { index, clip in
-                        if layout.segments.indices.contains(index) {
-                            let segment = layout.segments[index]
-                            let segmentWidth = max(minimumSegmentWidth, segment.width)
-                            let offsetX = min(segment.x, max(0, trackWidth - segmentWidth))
-
-                            Button {
-                                onSelectClip(clip.id)
-                            } label: {
-                                TimelineSegmentView(
-                                    clipNumber: index + 1,
-                                    clip: clip,
-                                    isSelected: clip.id == selectedClipID,
-                                    showsDuration: segmentWidth > 72
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .frame(width: segmentWidth, height: segmentHeight)
-                            .offset(x: offsetX + horizontalInset, y: 8)
-                            .accessibilityLabel(
-                                "Clip \(index + 1): \(TimecodeFormatter.displayString(for: clip.start)) to \(TimecodeFormatter.displayString(for: clip.end))"
-                            )
-                            .accessibilityIdentifier("clip-chip-\(index + 1)")
-                        }
+                    .onEnded { value in
+                        onScrubEnd(time(for: value.location.x, trackWidth: trackWidth))
                     }
+            )
+    }
 
-                    Capsule(style: .continuous)
-                        .fill(ConsolePalette.playhead)
-                        .frame(width: 3, height: trackHeight + 6)
-                        .offset(x: playheadX + horizontalInset, y: -1)
+    private func clipLayer(trackWidth: CGFloat, layout: TimelineLayout) -> some View {
+        ForEach(Array(clips.enumerated()), id: \.element.id) { index, clip in
+            if layout.segments.indices.contains(index) {
+                let segment = layout.segments[index]
+                let segmentWidth = min(max(minimumSegmentWidth, segment.width), trackWidth)
+                let minX = min(max(0, segment.x), max(0, trackWidth - segmentWidth))
 
-                    Circle()
-                        .fill(ConsolePalette.playhead)
-                        .frame(width: 9, height: 9)
-                        .offset(x: playheadX + horizontalInset - 3, y: 1)
+                Button {
+                    onSelectClip(clip.id)
+                } label: {
+                    TimelineSegmentView(
+                        clipNumber: index + 1,
+                        clip: clip,
+                        isSelected: clip.id == selectedClipID,
+                        showsDuration: segmentWidth > 72,
+                        cornerRadius: segmentCornerRadius
+                    )
                 }
-                .frame(height: trackHeight + 8)
+                .buttonStyle(.plain)
+                .frame(width: segmentWidth, height: segmentHeight)
+                .position(
+                    x: minX + (segmentWidth / 2),
+                    y: trackVerticalInset + (segmentHeight / 2)
+                )
+                .accessibilityLabel(
+                    "Clip \(index + 1): \(TimecodeFormatter.displayString(for: clip.start)) to \(TimecodeFormatter.displayString(for: clip.end))"
+                )
+                .accessibilityIdentifier("clip-chip-\(index + 1)")
             }
         }
-        .frame(height: 84)
+    }
+
+    private func playheadLayer(playheadX: CGFloat) -> some View {
+        ZStack(alignment: .topLeading) {
+            Capsule(style: .continuous)
+                .fill(ConsolePalette.playhead)
+                .frame(width: playheadLineWidth, height: trackHeight - 4)
+                .position(x: playheadX, y: trackHeight / 2)
+
+            Circle()
+                .fill(ConsolePalette.playhead)
+                .frame(width: playheadHandleSize, height: playheadHandleSize)
+                .position(x: playheadX, y: 6)
+        }
     }
 
     private var trackBackground: LinearGradient {
@@ -134,22 +169,6 @@ struct RibbonView: View {
         )
     }
 
-    private func scrubSurface(trackWidth: CGFloat) -> some View {
-        Rectangle()
-            .fill(Color.clear)
-            .frame(width: trackWidth, height: segmentHeight)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        onScrub(time(for: value.location.x, trackWidth: trackWidth))
-                    }
-                    .onEnded { value in
-                        onScrubEnd(time(for: value.location.x, trackWidth: trackWidth))
-                    }
-            )
-    }
-
     private func time(for locationX: CGFloat, trackWidth: CGFloat) -> CMTime {
         guard duration.secondsValue > 0, trackWidth > 0 else {
             return .zero
@@ -162,7 +181,10 @@ struct RibbonView: View {
     }
 
     private func clampedPlayheadX(_ x: CGFloat, trackWidth: CGFloat) -> CGFloat {
-        min(max(x, 0), max(0, trackWidth))
+        let halfLine = playheadLineWidth / 2
+        let halfHandle = playheadHandleSize / 2
+        let inset = max(halfLine, halfHandle)
+        return min(max(x, inset), max(inset, trackWidth - inset))
     }
 
     private func pendingFrame(trackWidth: CGFloat) -> CGRect? {
@@ -173,51 +195,20 @@ struct RibbonView: View {
         let start = min(pendingInPoint.secondsValue, currentTime.secondsValue)
         let end = max(pendingInPoint.secondsValue, currentTime.secondsValue)
         let durationSeconds = duration.secondsValue
+        let minX = min(CGFloat(start / durationSeconds) * trackWidth, trackWidth)
+        let width = min(
+            CGFloat((end - start) / durationSeconds) * trackWidth,
+            max(0, trackWidth - minX)
+        )
 
         return CGRect(
-            x: CGFloat(start / durationSeconds) * trackWidth,
+            x: minX,
             y: 0,
-            width: CGFloat((end - start) / durationSeconds) * trackWidth,
+            width: width,
             height: segmentHeight
         )
     }
 
-    private func makeRulerTicks(trackWidth: CGFloat) -> [TimelineTick] {
-        let safeDuration = max(duration.secondsValue, 0)
-
-        return (0...rulerStepCount).map { index in
-            let ratio = CGFloat(index) / CGFloat(rulerStepCount)
-            let seconds = safeDuration * Double(ratio)
-            return TimelineTick(
-                id: index,
-                x: ratio * trackWidth,
-                label: rulerLabel(for: seconds),
-                alignment: index == 0 ? .leading : (index == rulerStepCount ? .trailing : .center),
-                isTerminal: index == 0 || index == rulerStepCount
-            )
-        }
-    }
-
-    private func rulerLabel(for seconds: Double) -> String {
-        let roundedSeconds = max(0, Int(seconds.rounded()))
-        let hours = roundedSeconds / 3_600
-        let minutes = (roundedSeconds % 3_600) / 60
-        let remainingSeconds = roundedSeconds % 60
-
-        if hours > 0 {
-            return String(format: "%02d:%02d:%02d", hours, minutes, remainingSeconds)
-        }
-
-        return String(format: "%02d:%02d", minutes, remainingSeconds)
-    }
-}
-
-private struct TimelineTick: Identifiable {
-    let id: Int
-    let x: CGFloat
-    let label: String
-    let alignment: Alignment
-    let isTerminal: Bool
 }
 
 private struct TimelineSegmentView: View {
@@ -225,6 +216,7 @@ private struct TimelineSegmentView: View {
     let clip: ClipSegment
     let isSelected: Bool
     let showsDuration: Bool
+    let cornerRadius: CGFloat
 
     var body: some View {
         HStack(spacing: 5) {
@@ -242,9 +234,12 @@ private struct TimelineSegmentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(background)
+        .background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(background)
+        )
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .strokeBorder(borderColor, lineWidth: 1)
         )
     }

@@ -29,6 +29,7 @@ enum KeyboardCommand: Equatable {
     case stepForwardFrame
     case markIn
     case markOut
+    case deleteSelectedClip
 }
 
 enum KeyboardShortcutInterpreter {
@@ -40,6 +41,8 @@ enum KeyboardShortcutInterpreter {
             return input.isShiftPressed ? .stepBackwardFrame : .seekBackwardFiveSeconds
         case 124:
             return input.isShiftPressed ? .stepForwardFrame : .seekForwardFiveSeconds
+        case 51, 117:
+            return .deleteSelectedClip
         default:
             switch input.characters.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
             case "i":
