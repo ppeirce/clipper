@@ -113,7 +113,7 @@ final class ClipperViewModel: ObservableObject {
         recordTrace(
             category: .export,
             message: "Queued export",
-            details: "\(clips.count) clip(s) using \(preset.displayName)"
+            details: "\(clipCountLabel(clips.count)) using \(preset.displayName)"
         )
 
         Task { @MainActor in
@@ -126,54 +126,36 @@ final class ClipperViewModel: ObservableObject {
             return false
         }
 
-        switch command {
-        case .togglePlayback:
-            togglePlayback()
-        case .seekBackwardFiveSeconds:
-            seek(seconds: -5)
-        case .seekForwardFiveSeconds:
-            seek(seconds: 5)
-        case .stepBackwardFrame:
-            step(frames: -1)
-        case .stepForwardFrame:
-            step(frames: 1)
-        case .markIn:
-            markIn()
-        case .markOut:
-            markOut()
-        case .deleteSelectedClip:
-            deleteSelectedClip()
-        }
-
+        perform(command)
         return true
     }
 
     func togglePlaybackFromUI() {
-        togglePlayback()
+        perform(.togglePlayback)
     }
 
     func seekBackwardFromUI() {
-        seek(seconds: -5)
+        perform(.seekBackwardFiveSeconds)
     }
 
     func seekForwardFromUI() {
-        seek(seconds: 5)
+        perform(.seekForwardFiveSeconds)
     }
 
     func stepBackwardFromUI() {
-        step(frames: -1)
+        perform(.stepBackwardFrame)
     }
 
     func stepForwardFromUI() {
-        step(frames: 1)
+        perform(.stepForwardFrame)
     }
 
     func markInFromUI() {
-        markIn()
+        perform(.markIn)
     }
 
     func markOutFromUI() {
-        markOut()
+        perform(.markOut)
     }
 
     func scrubToTimeFromUI(_ time: CMTime) {
@@ -191,7 +173,7 @@ final class ClipperViewModel: ObservableObject {
             recordTrace(
                 category: .clip,
                 message: "Selected clip",
-                details: "\(TimecodeFormatter.displayString(for: clip.start)) - \(TimecodeFormatter.displayString(for: clip.end))"
+                details: formattedClipRange(clip)
             )
         }
     }
@@ -204,7 +186,7 @@ final class ClipperViewModel: ObservableObject {
         recordTrace(
             category: .clip,
             message: "Deleted clip",
-            details: "\(TimecodeFormatter.displayString(for: selectedClip.start)) - \(TimecodeFormatter.displayString(for: selectedClip.end))"
+            details: formattedClipRange(selectedClip)
         )
     }
 
@@ -224,7 +206,7 @@ final class ClipperViewModel: ObservableObject {
         recordTrace(
             category: .clip,
             message: label,
-            details: "\(TimecodeFormatter.displayString(for: clip.start)) - \(TimecodeFormatter.displayString(for: clip.end))"
+            details: formattedClipRange(clip)
         )
     }
 
@@ -305,7 +287,7 @@ final class ClipperViewModel: ObservableObject {
             )
             isExporting = false
             state.lastError = nil
-            statusMessage = "Exported \(exportedFiles.count) clip(s) to \(outputDirectory.lastPathComponent)."
+            statusMessage = "Exported \(clipCountLabel(exportedFiles.count)) to \(outputDirectory.lastPathComponent)."
             await refreshTraceEvents()
         } catch {
             isExporting = false
@@ -338,7 +320,7 @@ final class ClipperViewModel: ObservableObject {
 
     private func refreshStatus() {
         if isExporting {
-            statusMessage = "Exporting \(state.clips.count) clip(s)..."
+            statusMessage = "Exporting \(clipCountLabel(state.clips.count))..."
             return
         }
 
@@ -348,17 +330,17 @@ final class ClipperViewModel: ObservableObject {
         }
 
         if let pendingInPoint = state.pendingInPoint {
-            statusMessage = "In point set at \(TimecodeFormatter.displayString(for: pendingInPoint)). Move to the out point and press O."
+            statusMessage = "In point set at \(formattedTime(pendingInPoint)). Move to the out point and press O."
             return
         }
 
         if let selectedClip = state.selectedClip {
-            statusMessage = "Selected clip \(TimecodeFormatter.displayString(for: selectedClip.start)) - \(TimecodeFormatter.displayString(for: selectedClip.end))."
+            statusMessage = "Selected clip \(formattedClipRange(selectedClip))."
             return
         }
 
         if !state.clips.isEmpty {
-            statusMessage = "\(state.clips.count) clip(s) ready for export."
+            statusMessage = "\(clipCountLabel(state.clips.count)) ready for export."
             return
         }
 
@@ -379,7 +361,7 @@ final class ClipperViewModel: ObservableObject {
         recordTrace(
             category: .playback,
             message: state.isPlaying ? "Started playback" : "Paused playback",
-            details: TimecodeFormatter.displayString(for: state.currentTime)
+            details: formattedTime(state.currentTime)
         )
     }
 
@@ -408,7 +390,7 @@ final class ClipperViewModel: ObservableObject {
         recordTrace(
             category: .clip,
             message: "Marked in point",
-            details: TimecodeFormatter.displayString(for: pendingInPoint)
+            details: formattedTime(pendingInPoint)
         )
     }
 
@@ -421,7 +403,7 @@ final class ClipperViewModel: ObservableObject {
             recordTrace(
                 category: .clip,
                 message: "Created clip",
-                details: "\(TimecodeFormatter.displayString(for: clip.start)) - \(TimecodeFormatter.displayString(for: clip.end))"
+                details: formattedClipRange(clip)
             )
             return
         }
@@ -447,6 +429,27 @@ final class ClipperViewModel: ObservableObject {
         recentTraceEvents = await tracer.recentEvents()
     }
 
+    private func perform(_ command: KeyboardCommand) {
+        switch command {
+        case .togglePlayback:
+            togglePlayback()
+        case .seekBackwardFiveSeconds:
+            seek(seconds: -5)
+        case .seekForwardFiveSeconds:
+            seek(seconds: 5)
+        case .stepBackwardFrame:
+            step(frames: -1)
+        case .stepForwardFrame:
+            step(frames: 1)
+        case .markIn:
+            markIn()
+        case .markOut:
+            markOut()
+        case .deleteSelectedClip:
+            deleteSelectedClip()
+        }
+    }
+
     private func seek(to time: CMTime, recordTrace shouldTrace: Bool, message: String = "Seeked playback") {
         guard let asset = state.asset else {
             return
@@ -466,23 +469,35 @@ final class ClipperViewModel: ObservableObject {
         self.recordTrace(
             category: .playback,
             message: message,
-            details: TimecodeFormatter.displayString(for: state.currentTime)
+            details: formattedTime(state.currentTime)
         )
     }
 
     private func clipHistoryTraceDetails() -> String? {
         if let selectedClip = state.selectedClip {
-            return "\(TimecodeFormatter.displayString(for: selectedClip.start)) - \(TimecodeFormatter.displayString(for: selectedClip.end))"
+            return formattedClipRange(selectedClip)
         }
 
         if let pendingInPoint = state.pendingInPoint {
-            return "IN \(TimecodeFormatter.displayString(for: pendingInPoint))"
+            return "IN \(formattedTime(pendingInPoint))"
         }
 
         if state.clips.isEmpty {
             return "No clips"
         }
 
-        return "\(state.clips.count) clip(s)"
+        return clipCountLabel(state.clips.count)
+    }
+
+    private func formattedTime(_ time: CMTime) -> String {
+        TimecodeFormatter.displayString(for: time)
+    }
+
+    private func formattedClipRange(_ clip: ClipSegment) -> String {
+        "\(formattedTime(clip.start)) - \(formattedTime(clip.end))"
+    }
+
+    private func clipCountLabel(_ count: Int) -> String {
+        "\(count) clip(s)"
     }
 }

@@ -46,7 +46,7 @@ enum EditorReducer {
                 return []
             }
             let nextPendingInPoint = state.currentTime
-            guard !timesEqual(state.pendingInPoint, nextPendingInPoint) else {
+            guard !state.pendingInPoint.isEqualTo(nextPendingInPoint) else {
                 state.lastError = nil
                 return []
             }
@@ -134,16 +134,6 @@ enum EditorReducer {
             state.lastError = nil
             return []
 
-        case .clearPendingInPoint:
-            guard state.pendingInPoint != nil else {
-                state.lastError = nil
-                return []
-            }
-            pushUndoSnapshot(into: &state)
-            state.pendingInPoint = nil
-            state.lastError = nil
-            return []
-
         case .clearClips:
             guard !state.clips.isEmpty || state.pendingInPoint != nil || state.selectedClipID != nil else {
                 state.lastError = nil
@@ -198,16 +188,5 @@ enum EditorReducer {
         state.pendingInPoint = snapshot.pendingInPoint
         state.clips = snapshot.clips
         state.selectedClipID = snapshot.selectedClipID
-    }
-
-    private static func timesEqual(_ lhs: CMTime?, _ rhs: CMTime?) -> Bool {
-        switch (lhs, rhs) {
-        case (nil, nil):
-            return true
-        case let (left?, right?):
-            return left.isEqualTo(right)
-        default:
-            return false
-        }
     }
 }

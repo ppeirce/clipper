@@ -30,3 +30,16 @@ extension CMTime {
         CMTimeCompare(self, other) == 0
     }
 }
+
+extension Optional where Wrapped == CMTime {
+    func isEqualTo(_ other: CMTime?) -> Bool {
+        switch (self, other) {
+        case (nil, nil):
+            return true
+        case let (left?, right?):
+            return left.isEqualTo(right)
+        default:
+            return false
+        }
+    }
+}

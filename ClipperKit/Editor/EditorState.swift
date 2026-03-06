@@ -41,10 +41,9 @@ struct ClipDefinitionSnapshot {
 
 extension ClipDefinitionSnapshot: Equatable {
     static func == (lhs: ClipDefinitionSnapshot, rhs: ClipDefinitionSnapshot) -> Bool {
-        ((lhs.pendingInPoint == nil && rhs.pendingInPoint == nil) ||
-            (lhs.pendingInPoint?.isEqualTo(rhs.pendingInPoint ?? .invalid) ?? false)) &&
-        lhs.clips == rhs.clips &&
-        lhs.selectedClipID == rhs.selectedClipID
+        lhs.pendingInPoint.isEqualTo(rhs.pendingInPoint) &&
+            lhs.clips == rhs.clips &&
+            lhs.selectedClipID == rhs.selectedClipID
     }
 }
 
@@ -100,16 +99,15 @@ struct EditorState {
 extension EditorState: Equatable {
     static func == (lhs: EditorState, rhs: EditorState) -> Bool {
         lhs.asset == rhs.asset &&
-        lhs.currentTime.isEqualTo(rhs.currentTime) &&
-        lhs.isPlaying == rhs.isPlaying &&
-        ((lhs.pendingInPoint == nil && rhs.pendingInPoint == nil) ||
-            (lhs.pendingInPoint?.isEqualTo(rhs.pendingInPoint ?? .invalid) ?? false)) &&
-        lhs.clips == rhs.clips &&
-        lhs.selectedClipID == rhs.selectedClipID &&
-        lhs.undoHistory == rhs.undoHistory &&
-        lhs.redoHistory == rhs.redoHistory &&
-        lhs.exportPreset == rhs.exportPreset &&
-        lhs.lastError == rhs.lastError
+            lhs.currentTime.isEqualTo(rhs.currentTime) &&
+            lhs.isPlaying == rhs.isPlaying &&
+            lhs.pendingInPoint.isEqualTo(rhs.pendingInPoint) &&
+            lhs.clips == rhs.clips &&
+            lhs.selectedClipID == rhs.selectedClipID &&
+            lhs.undoHistory == rhs.undoHistory &&
+            lhs.redoHistory == rhs.redoHistory &&
+            lhs.exportPreset == rhs.exportPreset &&
+            lhs.lastError == rhs.lastError
     }
 }
 
@@ -130,7 +128,6 @@ enum EditorAction: Equatable {
     case deleteSelectedClip
     case setSelectedClipBoundary(ClipBoundary, to: CMTime)
     case setExportPreset(ExportPreset)
-    case clearPendingInPoint
     case clearClips
     case undoClipChange
     case redoClipChange
