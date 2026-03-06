@@ -37,6 +37,7 @@
 		AB847A5E0EC755D840136697 /* PlayerSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A43E68413872062F9127C1 /* PlayerSurfaceView.swift */; };
 		ABD2419D3EC9728B4B7B7428 /* FFmpegCommandBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6986C912D7CCF30719411BE /* FFmpegCommandBuilderTests.swift */; };
 		ACC4C8173C3AA4C9E1496615 /* RuntimeTraceStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBCC915836CA09FC375B6B33 /* RuntimeTraceStoreTests.swift */; };
+		C15D839597FF9C0A106E1F8C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5F4A2046B0F83CC975AAB666 /* Assets.xcassets */; };
 		C1BB5F9DC7E31A0ECB8B40DD /* OpenWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC77FA7255A077F702358AD0 /* OpenWorkflowTests.swift */; };
 		C638137602A220B56139CA7E /* ClipperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE4A30A0892D90E948B30A1 /* ClipperViewModel.swift */; };
 		D1CCEC5AE490207D34E12436 /* AVPlayerPlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC730E467C28CDEE03EC98AF /* AVPlayerPlaybackController.swift */; };
@@ -113,6 +114,7 @@
 		3782CE15A7DAFD9B5DFDC09F /* ExportPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportPreset.swift; sourceTree = "<group>"; };
 		397DA16906EEEEA7A4F273FC /* EditorReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorReducer.swift; sourceTree = "<group>"; };
 		4D5A58FA24699EC9DBA9D85F /* ClipperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipperApp.swift; sourceTree = "<group>"; };
+		5F4A2046B0F83CC975AAB666 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		71687DABF36070BDFA40C4A0 /* KeyboardShortcutInterpreter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutInterpreter.swift; sourceTree = "<group>"; };
 		76257218103C8D9FBA2FD139 /* EditorReducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorReducerTests.swift; sourceTree = "<group>"; };
 		77D258150E187874B51DCE63 /* ClipExportPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipExportPlanner.swift; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 		D0D24F555886C14DB3520409 /* Clipper */ = {
 			isa = PBXGroup;
 			children = (
+				5F4A2046B0F83CC975AAB666 /* Assets.xcassets */,
 				4D5A58FA24699EC9DBA9D85F /* ClipperApp.swift */,
 			);
 			path = Clipper;
@@ -348,6 +351,7 @@
 			buildConfigurationList = C57B74776BCFFABB1F92D37A /* Build configuration list for PBXNativeTarget "Clipper" */;
 			buildPhases = (
 				06DBB3219143E5CD2346DD04 /* Sources */,
+				F9D54EF597AF62384E3C3142 /* Resources */,
 				7D6D6BCB86814582A8E2D8E7 /* Frameworks */,
 				99B6106309EB284C4F7E921B /* Embed Frameworks */,
 			);
@@ -439,6 +443,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F9D54EF597AF62384E3C3142 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C15D839597FF9C0A106E1F8C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		06DBB3219143E5CD2346DD04 /* Sources */ = {

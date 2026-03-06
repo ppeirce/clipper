@@ -10,4 +10,6 @@ xcuserdata/
 *.mov
 *.h264
 *.h265
+icon.jpeg
+Gemini_Generated_Image_*.png
 .claude/
