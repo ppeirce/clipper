@@ -1,9 +1,13 @@
 import AVKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PlayerSurfaceView: View {
     let player: AVPlayer
     let showsPlaceholder: Bool
+    let onOpenDroppedFile: (URL) -> Void
+
+    @State private var isDropTargeted = false
 
     var body: some View {
         ZStack {
@@ -42,12 +46,68 @@ struct PlayerSurfaceView: View {
                 .padding(24)
                 .allowsHitTesting(false)
             }
+
+            if isDropTargeted {
+                Rectangle()
+                    .fill(Color.black.opacity(0.42))
+                    .overlay {
+                        VStack(spacing: 8) {
+                            Image(systemName: "arrow.down.doc.fill")
+                                .font(.system(size: 28, weight: .semibold))
+                            Text("Drop Video to Open")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(ConsolePalette.textPrimary)
+                    }
+                    .allowsHitTesting(false)
+            }
         }
         .overlay(
             Rectangle()
                 .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onDrop(of: [UTType.fileURL.identifier], isTargeted: $isDropTargeted, perform: handleDrop(providers:))
+    }
+
+    private func handleDrop(providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first(where: {
+            $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier)
+        }) else {
+            return false
+        }
+
+        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+            guard let url = Self.extractURL(from: item) else {
+                return
+            }
+
+            Task { @MainActor in
+                onOpenDroppedFile(url)
+            }
+        }
+
+        return true
+    }
+
+    private nonisolated static func extractURL(from item: NSSecureCoding?) -> URL? {
+        if let url = item as? URL {
+            return url
+        }
+
+        if let url = item as? NSURL {
+            return url as URL
+        }
+
+        if let data = item as? Data {
+            return URL(dataRepresentation: data, relativeTo: nil)
+        }
+
+        if let text = item as? String, let url = URL(string: text), url.isFileURL {
+            return url
+        }
+
+        return nil
     }
 }
 

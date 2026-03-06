@@ -15,7 +15,7 @@ Deeper reference material lives in [`docs/architecture.md`](docs/architecture.md
 
 ## Product workflow
 
-1. Open a local source video.
+1. Open a local source video from the toolbar, `File > Open...`, `File > Open Recent`, or by dragging a file onto the player.
 2. Review playback in the main player surface.
 3. Use the keyboard to seek, step, and mark clip boundaries.
 4. Save one or more clips into the ribbon timeline.
@@ -37,6 +37,13 @@ Deeper reference material lives in [`docs/architecture.md`](docs/architecture.md
 | `Cmd + O` | Open a source video |
 
 The footer mirrors these controls in the running app.
+
+Open paths currently supported in the app:
+
+- toolbar `Open` button
+- `File > Open...`
+- `File > Open Recent`
+- drag-and-drop onto the player surface
 
 ## Editing rules
 
@@ -80,7 +87,8 @@ The product target is local video review for `mp4`, `mov`, `h264`, and `h265` so
 
 Current implementation detail:
 
-- The open panel allows file selection and leaves compatibility checks to AVFoundation on load.
+- The open workflow accepts `mp4`, `mov`, `m4v`, `h264`, `h265`, and `hevc` extensions.
+- Successful opens are recorded into the app's recent-file menu.
 - Export always emits `.mp4` files through `ffmpeg`.
 - Raw stream handling depends on what AVFoundation can open and what `ffmpeg` can later remux or transcode on the machine.
 
@@ -156,6 +164,6 @@ The deeper verification plan and current suite inventory are documented in [`doc
 
 - Only a single source asset is editable at a time.
 - There is no persisted project/session format yet.
-- The open panel does not yet restrict file types at the UI layer.
+- The open panel still uses post-selection validation instead of filtering unsupported files before selection.
 - Export success is based on `ffmpeg` process completion; post-export validation with `ffprobe` is not implemented yet.
 - There is no clip rename, reorder, or batch preset-per-clip support.

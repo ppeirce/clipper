@@ -22,6 +22,7 @@
 		3A0FC3A9DF9E37CB1858548D /* EditorWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BACEDCBDB2BF977577FA40F /* EditorWorkflowTests.swift */; };
 		3AEADA7CA1351FF4ACB122EB /* FFmpegClipExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3092BCE1CA539696660D68B /* FFmpegClipExporter.swift */; };
 		4552F1238E5D19C1B78A2F47 /* TimelineProjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137EACF51E5289F88B1C025F /* TimelineProjector.swift */; };
+		4C6BCFBB5811A4F55D942A6C /* OpenWorkflowSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965FDDC3BC46E9BD5C719EBF /* OpenWorkflowSupport.swift */; };
 		6AF961A6DB17FB9162371B28 /* ExportPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3782CE15A7DAFD9B5DFDC09F /* ExportPreset.swift */; };
 		751945D1356E944C9EAE0490 /* OSLog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E18D8913B0BB80AA49972F1 /* OSLog.framework */; };
 		776E07A8CF5EA4972488254E /* ClipperKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B8415649E0BC04D52612D6A9 /* ClipperKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -35,6 +36,7 @@
 		AB847A5E0EC755D840136697 /* PlayerSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A43E68413872062F9127C1 /* PlayerSurfaceView.swift */; };
 		ABD2419D3EC9728B4B7B7428 /* FFmpegCommandBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6986C912D7CCF30719411BE /* FFmpegCommandBuilderTests.swift */; };
 		ACC4C8173C3AA4C9E1496615 /* RuntimeTraceStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBCC915836CA09FC375B6B33 /* RuntimeTraceStoreTests.swift */; };
+		C1BB5F9DC7E31A0ECB8B40DD /* OpenWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC77FA7255A077F702358AD0 /* OpenWorkflowTests.swift */; };
 		C638137602A220B56139CA7E /* ClipperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE4A30A0892D90E948B30A1 /* ClipperViewModel.swift */; };
 		D1CCEC5AE490207D34E12436 /* AVPlayerPlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC730E467C28CDEE03EC98AF /* AVPlayerPlaybackController.swift */; };
 		D3A6F7BFF2FC26C45A11251D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96735AF8B6B8F5716AE12A14 /* SwiftUI.framework */; };
@@ -117,6 +119,7 @@
 		92D97F576A5D2932DD58F02A /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		93A277C475B5CF59DA93D6FA /* TimecodeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimecodeFormatter.swift; sourceTree = "<group>"; };
 		9453B0114C90BD393747BD24 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
+		965FDDC3BC46E9BD5C719EBF /* OpenWorkflowSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenWorkflowSupport.swift; sourceTree = "<group>"; };
 		96735AF8B6B8F5716AE12A14 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		9993D0268F8CDF4F6A39D180 /* RibbonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RibbonView.swift; sourceTree = "<group>"; };
 		9A35DC73F19E48D801A437E5 /* TimelineProjectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineProjectorTests.swift; sourceTree = "<group>"; };
@@ -136,6 +139,7 @@
 		DC730E467C28CDEE03EC98AF /* AVPlayerPlaybackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlayerPlaybackController.swift; sourceTree = "<group>"; };
 		DCA6884DC7D15ED87B036807 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		EBCC915836CA09FC375B6B33 /* RuntimeTraceStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeTraceStoreTests.swift; sourceTree = "<group>"; };
+		EC77FA7255A077F702358AD0 /* OpenWorkflowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenWorkflowTests.swift; sourceTree = "<group>"; };
 		FDF2EE1188A6043366C86169 /* CMTime+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CMTime+Helpers.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -188,6 +192,7 @@
 			children = (
 				DA843EE7C10C45AECB5C00A8 /* AppLaunchOptions.swift */,
 				0BE4A30A0892D90E948B30A1 /* ClipperViewModel.swift */,
+				965FDDC3BC46E9BD5C719EBF /* OpenWorkflowSupport.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -231,6 +236,7 @@
 				BD36DC1BABA2717EC34EF8C8 /* FFmpegClipExporterTests.swift */,
 				A6986C912D7CCF30719411BE /* FFmpegCommandBuilderTests.swift */,
 				07DA49EB78A93E1ED70870B0 /* KeyboardShortcutInterpreterTests.swift */,
+				EC77FA7255A077F702358AD0 /* OpenWorkflowTests.swift */,
 				EBCC915836CA09FC375B6B33 /* RuntimeTraceStoreTests.swift */,
 				9A35DC73F19E48D801A437E5 /* TimelineProjectorTests.swift */,
 			);
@@ -449,6 +455,7 @@
 				FA9ADCE93F8B8666C8CF8F45 /* FFmpegClipExporterTests.swift in Sources */,
 				ABD2419D3EC9728B4B7B7428 /* FFmpegCommandBuilderTests.swift in Sources */,
 				EC2A588947B017CBBA4FBDD8 /* KeyboardShortcutInterpreterTests.swift in Sources */,
+				C1BB5F9DC7E31A0ECB8B40DD /* OpenWorkflowTests.swift in Sources */,
 				ACC4C8173C3AA4C9E1496615 /* RuntimeTraceStoreTests.swift in Sources */,
 				3353A4B2C53325C2EED454FC /* TimelineProjectorTests.swift in Sources */,
 			);
@@ -473,6 +480,7 @@
 				7F60ACDD1D85523B5E7B7CFA /* FFmpegCommandBuilder.swift in Sources */,
 				EFC48A1FA9A8B530159B900D /* KeyboardCaptureView.swift in Sources */,
 				1DEF8220D553E7FE3C3A9705 /* KeyboardShortcutInterpreter.swift in Sources */,
+				4C6BCFBB5811A4F55D942A6C /* OpenWorkflowSupport.swift in Sources */,
 				AB847A5E0EC755D840136697 /* PlayerSurfaceView.swift in Sources */,
 				1AD41E7D9F91E67DAE623DFA /* RibbonView.swift in Sources */,
 				0F5C176BE82BD85CF383407B /* RuntimeTraceStore.swift in Sources */,

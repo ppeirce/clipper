@@ -191,7 +191,6 @@ public struct ContentView: View {
     private var utilityActions: some View {
         HStack(spacing: 8) {
             Button("Open", action: viewModel.openVideo)
-                .keyboardShortcut("o", modifiers: [.command])
                 .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
                 .accessibilityIdentifier("open-video")
 
@@ -204,7 +203,11 @@ public struct ContentView: View {
 
     private var playerConsole: some View {
         VStack(spacing: 0) {
-            PlayerSurfaceView(player: viewModel.player, showsPlaceholder: !viewModel.hasLoadedVideo)
+            PlayerSurfaceView(
+                player: viewModel.player,
+                showsPlaceholder: !viewModel.hasLoadedVideo,
+                onOpenDroppedFile: viewModel.openVideo(at:)
+            )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .frame(minHeight: Self.minimumPlayerHeight)
                 .overlay(alignment: .topLeading) {
@@ -865,6 +868,34 @@ public struct ClipperCommands: Commands {
     public init() {}
 
     public var body: some Commands {
+        CommandGroup(replacing: .newItem) {
+            Button("Open...") {
+                viewModel?.openVideo()
+            }
+            .keyboardShortcut("o", modifiers: [.command])
+            .disabled(viewModel == nil)
+
+            Menu("Open Recent") {
+                if let viewModel, !viewModel.recentVideoURLs.isEmpty {
+                    ForEach(viewModel.recentVideoURLs, id: \.self) { url in
+                        Button(url.lastPathComponent) {
+                            viewModel.openVideo(at: url)
+                        }
+                    }
+
+                    Divider()
+
+                    Button("Clear Menu") {
+                        viewModel.clearRecentVideos()
+                    }
+                } else {
+                    Button("No Recent Videos") {}
+                        .disabled(true)
+                }
+            }
+            .disabled(viewModel?.recentVideoURLs.isEmpty ?? true)
+        }
+
         CommandMenu("Preset") {
             Picker("Export Preset", selection: exportPresetSelection) {
                 ForEach(ExportPreset.allCases) { preset in

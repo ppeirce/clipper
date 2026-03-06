@@ -70,7 +70,7 @@ That leads to four main constraints:
 ### `ClipperKit/UI`
 
 - `ContentView.swift`: main layout and operator controls.
-- `PlayerSurfaceView.swift`: AVPlayer hosting surface.
+- `PlayerSurfaceView.swift`: AVPlayer hosting surface and file drop target.
 - `RibbonView.swift`: playback position and clip visualization.
 - `KeyboardCaptureView.swift`: key event capture for keyboard-first editing.
 
@@ -89,12 +89,13 @@ This split matters because the reducer owns correctness, while the view model ow
 ## Playback flow
 
 1. The user opens a file.
+   This can come from the toolbar, the File menu, the recent-file submenu, or a drag-and-drop action on the player.
 2. `PlaybackControlling.loadVideo` resolves a `VideoAssetContext`.
 3. The reducer resets state with the new asset.
 4. Live playback snapshots flow back through `PlaybackSnapshot`.
 5. The reducer keeps `currentTime`, `duration`, and `isPlaying` synchronized with the player.
 
-The live adapter is `AVPlayerPlaybackController`. Tests can swap in `FixturePlaybackController`.
+The live adapter is `AVPlayerPlaybackController`. Recent-file bookkeeping is isolated behind `RecentDocumentManaging`. Tests can swap in `FixturePlaybackController` and recent-document spies.
 
 ## Clip creation and editing flow
 

@@ -20,6 +20,7 @@ The goal is not just "some tests." The goal is fast, repeatable evidence that ed
 - `EditorReducerTests.swift`: reducer transport and clip marking behavior
 - `EditorWorkflowTests.swift`: clip selection, deletion, boundary editing, and overlap rejection flows
 - `KeyboardShortcutInterpreterTests.swift`: keyboard command mapping
+- `OpenWorkflowTests.swift`: supported-source filtering, direct URL opens, and recent-file bookkeeping
 - `TimelineProjectorTests.swift`: ribbon geometry projection
 - `FFmpegCommandBuilderTests.swift`: deterministic ffmpeg argument construction
 - `FFmpegClipExporterTests.swift`: export orchestration, naming collisions, and failure propagation

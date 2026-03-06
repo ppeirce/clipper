@@ -8,6 +8,7 @@ final class ClipperViewModel: ObservableObject {
     @Published private(set) var statusMessage = "Open a video to begin."
     @Published private(set) var isExporting = false
     @Published private(set) var recentTraceEvents: [RuntimeTraceEvent] = []
+    @Published private(set) var recentVideoURLs: [URL] = []
 
     let player: AVPlayer
     let traceFileURL: URL
@@ -15,6 +16,7 @@ final class ClipperViewModel: ObservableObject {
     private let playbackController: PlaybackControlling
     private let exporter: ClipExporting
     private let tracer: RuntimeTraceRecording
+    private let recentDocuments: RecentDocumentManaging
     private let openPanelFactory: @MainActor () -> NSOpenPanel
     private let exportPanelFactory: @MainActor () -> NSOpenPanel
 
@@ -26,6 +28,7 @@ final class ClipperViewModel: ObservableObject {
         playbackController: PlaybackControlling = AVPlayerPlaybackController(),
         exporter: ClipExporting? = nil,
         tracer: RuntimeTraceRecording = RuntimeTraceStore(),
+        recentDocuments: RecentDocumentManaging = AppRecentDocumentManager(),
         initialState: EditorState = EditorState(),
         openPanelFactory: @escaping @MainActor () -> NSOpenPanel = NSOpenPanel.init,
         exportPanelFactory: @escaping @MainActor () -> NSOpenPanel = NSOpenPanel.init
@@ -33,11 +36,13 @@ final class ClipperViewModel: ObservableObject {
         self.playbackController = playbackController
         self.tracer = tracer
         self.exporter = exporter ?? FFmpegClipExporter(tracer: tracer)
+        self.recentDocuments = recentDocuments
         self.openPanelFactory = openPanelFactory
         self.exportPanelFactory = exportPanelFactory
         self.player = playbackController.player
         self.traceFileURL = tracer.traceFileURL
         self.state = initialState
+        self.recentVideoURLs = SupportedVideoSource.filterRecentDocumentURLs(recentDocuments.recentDocumentURLs)
 
         playbackController.onSnapshot = { [weak self] snapshot in
             Task { @MainActor in
@@ -65,6 +70,10 @@ final class ClipperViewModel: ObservableObject {
             return
         }
 
+        openVideo(at: url)
+    }
+
+    func openVideo(at url: URL) {
         Task { @MainActor in
             await loadVideo(url: url)
         }
@@ -221,10 +230,29 @@ final class ClipperViewModel: ObservableObject {
         recordTrace(category: .clip, message: "Cleared clips", details: nil)
     }
 
+    func clearRecentVideos() {
+        recentDocuments.clearRecentDocuments()
+        refreshRecentVideos()
+        recordTrace(category: .diagnostics, message: "Cleared recent videos", details: nil)
+    }
+
     func loadVideo(url: URL) async {
+        guard SupportedVideoSource.supports(url) else {
+            state.lastError = SupportedVideoSource.unsupportedMessage
+            refreshStatus()
+            await appendTrace(
+                category: .playback,
+                message: "Rejected unsupported video",
+                details: url.lastPathComponent
+            )
+            return
+        }
+
         do {
             let context = try await playbackController.loadVideo(url: url)
             apply(.videoLoaded(context))
+            recentDocuments.noteRecentDocument(url)
+            refreshRecentVideos()
             await appendTrace(
                 category: .playback,
                 message: "Loaded video",
@@ -259,6 +287,10 @@ final class ClipperViewModel: ObservableObject {
             refreshStatus()
             await refreshTraceEvents()
         }
+    }
+
+    private func refreshRecentVideos() {
+        recentVideoURLs = SupportedVideoSource.filterRecentDocumentURLs(recentDocuments.recentDocumentURLs)
     }
 
     private func apply(_ action: EditorAction) {
