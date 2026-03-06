@@ -2,6 +2,8 @@
 
 `Clipper` is a macOS SwiftUI utility for reviewing a source video, marking multiple clip ranges, and exporting each range through `ffmpeg`.
 
+![Clipper screenshot](docs/screenshot.png)
+
 For development, `Clipper` can use a system `ffmpeg`. Packaged release builds embed `ffmpeg` directly into the app bundle so exported clips work on machines that do not have Homebrew installed.
 
 The current implementation is intentionally narrow and testable:
