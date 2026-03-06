@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 - 2026-03-06
+
+- Add app icon.
+
 ## 1.0.1 - 2026-03-06
 
 Test automated release pipeline.
