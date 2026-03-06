@@ -6,11 +6,17 @@ struct ClipperApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .frame(minWidth: 1000, minHeight: 700)
+                .frame(
+                    minWidth: ContentView.minimumWindowWidth,
+                    minHeight: ContentView.minimumWindowHeight
+                )
         }
         .commands {
             ClipperCommands()
         }
-        .defaultSize(width: 1200, height: 820)
+        .defaultSize(
+            width: ContentView.minimumWindowWidth,
+            height: ContentView.minimumWindowHeight
+        )
     }
 }

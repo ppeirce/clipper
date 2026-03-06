@@ -20,6 +20,7 @@ struct PlayerSurfaceView: View {
                 )
 
             NativePlayerView(player: player)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 0, style: .continuous))
 
             if showsPlaceholder {
@@ -46,6 +47,7 @@ struct PlayerSurfaceView: View {
             Rectangle()
                 .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
         )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

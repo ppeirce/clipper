@@ -2,6 +2,11 @@ import AVFoundation
 import SwiftUI
 
 public struct ContentView: View {
+    public static let minimumWindowWidth: CGFloat = 860
+    public static let minimumWindowHeight: CGFloat = 600
+
+    private static let minimumPlayerHeight: CGFloat = 220
+
     @StateObject private var viewModel: ClipperViewModel
     @State private var showsDiagnostics = false
 
@@ -15,19 +20,8 @@ public struct ContentView: View {
 
     public var body: some View {
         GeometryReader { geometry in
-            let shouldScroll = geometry.size.height < 820 || geometry.size.width < 980
-
-            Group {
-                if shouldScroll {
-                    ScrollView(.vertical, showsIndicators: false) {
-                        mainLayout(in: geometry)
-                            .frame(maxWidth: .infinity, alignment: .top)
-                    }
-                } else {
-                    mainLayout(in: geometry)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                }
-            }
+            mainLayout(in: geometry)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(ConsoleBackdrop())
         .background(
@@ -40,18 +34,21 @@ public struct ContentView: View {
 
     @ViewBuilder
     private func mainLayout(in geometry: GeometryProxy) -> some View {
-        let playerHeight = min(max(geometry.size.height * 0.62, 320), 760)
-
         VStack(spacing: 12) {
             utilityBar(compact: geometry.size.width < 1_180)
-            playerConsole(playerHeight: playerHeight)
+                .fixedSize(horizontal: false, vertical: true)
+            playerConsole
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .layoutPriority(1)
 
             if showsDiagnostics {
                 diagnosticsDrawer
+                    .fixedSize(horizontal: false, vertical: true)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
         .animation(.easeOut(duration: 0.18), value: showsDiagnostics)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(16)
     }
 
@@ -205,10 +202,11 @@ public struct ContentView: View {
         }
     }
 
-    private func playerConsole(playerHeight: CGFloat) -> some View {
+    private var playerConsole: some View {
         VStack(spacing: 0) {
             PlayerSurfaceView(player: viewModel.player, showsPlaceholder: !viewModel.hasLoadedVideo)
-                .frame(height: playerHeight)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minHeight: Self.minimumPlayerHeight)
                 .overlay(alignment: .topLeading) {
                     playerOverlay
                         .padding(12)
@@ -239,7 +237,9 @@ public struct ContentView: View {
                 onSetSelectedEnd: { viewModel.setSelectedClipBoundary(.end) },
                 onDeleteSelectedClip: viewModel.deleteSelectedClip
             )
+            .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .clipShape(Rectangle())
         .consolePanel(radius: 0)
     }
@@ -300,6 +300,8 @@ public struct ContentView: View {
 }
 
 private struct CompactRail: View {
+    private let detailRowHeight: CGFloat = 38
+
     let currentTime: String
     let duration: String
     let isPlaying: Bool
@@ -368,32 +370,9 @@ private struct CompactRail: View {
             }
             .padding(.horizontal, 14)
 
-            if let selectedClip {
-                HStack(spacing: 8) {
-                    SelectionBadge(index: selectedClipIndex.map { $0 + 1 }, clip: selectedClip)
-
-                    RailButton(label: "Set In", action: onSetSelectedStart)
-                        .accessibilityIdentifier("set-selected-start-to-playhead")
-
-                    RailButton(label: "Set Out", action: onSetSelectedEnd)
-                        .accessibilityIdentifier("set-selected-end-to-playhead")
-
-                    RailButton(label: "Delete", role: .destructive, action: onDeleteSelectedClip)
-                        .accessibilityIdentifier("delete-selected-clip")
-
-                    Spacer(minLength: 0)
-                }
+            detailRow
+                .frame(maxWidth: .infinity, minHeight: detailRowHeight, maxHeight: detailRowHeight, alignment: .leading)
                 .padding(.horizontal, 14)
-            } else if let pendingInPoint {
-                HStack(spacing: 8) {
-                    PendingBadge(
-                        start: TimecodeFormatter.displayString(for: pendingInPoint),
-                        end: currentTime
-                    )
-                    Spacer(minLength: 0)
-                }
-                .padding(.horizontal, 14)
-            }
         }
         .padding(.vertical, 12)
         .background(
@@ -411,6 +390,38 @@ private struct CompactRail: View {
             Rectangle()
                 .fill(Color.white.opacity(0.05))
                 .frame(height: 1)
+        }
+    }
+
+    @ViewBuilder
+    private var detailRow: some View {
+        if let selectedClip {
+            HStack(spacing: 8) {
+                SelectionBadge(index: selectedClipIndex.map { $0 + 1 }, clip: selectedClip)
+
+                RailButton(label: "Set In", action: onSetSelectedStart)
+                    .accessibilityIdentifier("set-selected-start-to-playhead")
+
+                RailButton(label: "Set Out", action: onSetSelectedEnd)
+                    .accessibilityIdentifier("set-selected-end-to-playhead")
+
+                RailButton(label: "Delete", role: .destructive, action: onDeleteSelectedClip)
+                    .accessibilityIdentifier("delete-selected-clip")
+
+                Spacer(minLength: 0)
+            }
+        } else if let pendingInPoint {
+            HStack(spacing: 8) {
+                PendingBadge(
+                    start: TimecodeFormatter.displayString(for: pendingInPoint),
+                    end: currentTime
+                )
+                Spacer(minLength: 0)
+            }
+        } else {
+            Color.clear
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityHidden(true)
         }
     }
 }
@@ -747,7 +758,9 @@ private struct CountBadge: View {
                             .strokeBorder(ConsolePalette.highlight.opacity(0.45), lineWidth: 1)
                     )
             )
+            .accessibilityElement(children: .ignore)
             .accessibilityLabel(value)
+            .accessibilityAddTraits(.isStaticText)
             .accessibilityIdentifier("clip-count")
     }
 }
