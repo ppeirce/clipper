@@ -1,3 +1,4 @@
+import AppKit
 import AVFoundation
 import SwiftUI
 
@@ -28,6 +29,7 @@ public struct ContentView: View {
             KeyboardCaptureView(onKeyDown: viewModel.handle)
                 .frame(width: 0, height: 0)
         )
+        .background(WindowTabConfigurator())
         .focusedSceneObject(viewModel)
         .focusedSceneValue(\.clipperShowsDiagnostics, $showsDiagnostics)
     }
@@ -763,8 +765,11 @@ private struct CountBadge: View {
             )
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(value)
-            .accessibilityAddTraits(.isStaticText)
             .accessibilityIdentifier("clip-count")
+            .accessibilityRepresentation {
+                Text(value)
+                    .accessibilityIdentifier("clip-count")
+            }
     }
 }
 
@@ -862,12 +867,15 @@ extension FocusedValues {
 }
 
 public struct ClipperCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
     @FocusedObject private var viewModel: ClipperViewModel?
     @FocusedBinding(\.clipperShowsDiagnostics) private var showsDiagnostics: Bool?
 
     public init() {}
 
     public var body: some Commands {
+        let _ = ClipperWindowCoordinator.shared.register(openWindowAction: openWindow)
+
         CommandGroup(replacing: .undoRedo) {
             Button("Undo") {
                 viewModel?.undoClipChange()
@@ -908,38 +916,46 @@ public struct ClipperCommands: Commands {
                 }
             }
             .disabled(viewModel?.recentVideoURLs.isEmpty ?? true)
-        }
 
-        CommandMenu("Preset") {
-            Picker("Export Preset", selection: exportPresetSelection) {
+            Divider()
+
+            Menu("Export Preset") {
                 ForEach(ExportPreset.allCases) { preset in
-                    Text(preset.displayName)
-                        .tag(preset)
+                    Button {
+                        viewModel?.setExportPreset(preset)
+                    } label: {
+                        if viewModel?.state.exportPreset == preset {
+                            Label(preset.displayName, systemImage: "checkmark")
+                        } else {
+                            Text(preset.displayName)
+                        }
+                    }
                 }
             }
             .disabled(viewModel == nil)
-        }
 
-        CommandMenu("Session") {
             Toggle("Show Diagnostics", isOn: diagnosticsSelection)
                 .disabled(showsDiagnostics == nil)
-
-            Divider()
 
             Button("Clear Clips") {
                 viewModel?.clearClips()
             }
             .disabled(viewModel?.state.clips.isEmpty ?? true)
         }
-    }
 
-    private var exportPresetSelection: Binding<ExportPreset> {
-        Binding(
-            get: { viewModel?.state.exportPreset ?? .fastH264 },
-            set: { preset in
-                viewModel?.setExportPreset(preset)
+        CommandGroup(after: .toolbar) {
+            Divider()
+
+            Button("New Window") {
+                ClipperWindowCoordinator.shared.openNewWindow(using: openWindow)
             }
-        )
+            .keyboardShortcut("n", modifiers: [.command])
+
+            Button("New Tab") {
+                ClipperWindowCoordinator.shared.requestNewTab(using: openWindow)
+            }
+            .keyboardShortcut("t", modifiers: [.command])
+        }
     }
 
     private var diagnosticsSelection: Binding<Bool> {
@@ -949,6 +965,162 @@ public struct ClipperCommands: Commands {
                 showsDiagnostics = isShown
             }
         )
+    }
+}
+
+@MainActor
+public enum ClipperWindowIdentifiers {
+    public static let mainWindow = "clipper-main-window"
+    public static let tabbingGroup = "clipper-session"
+}
+
+@MainActor
+public final class ClipperWindowCoordinator {
+    public static let shared = ClipperWindowCoordinator()
+
+    private weak var pendingTabParent: NSWindow?
+    private var pendingWindowNumbers: Set<Int> = []
+    private var pendingTabOpenWindow: (() -> Void)?
+    private var pendingTabTask: Task<Void, Never>?
+    private var storedOpenWindowAction: OpenWindowAction?
+    private var pendingInitialWindowRequest = false
+
+    public func register(openWindowAction: OpenWindowAction) {
+        storedOpenWindowAction = openWindowAction
+
+        guard pendingInitialWindowRequest, NSApp.windows.isEmpty else {
+            return
+        }
+
+        pendingInitialWindowRequest = false
+        openNewWindow(using: openWindowAction)
+    }
+
+    public func openInitialWindowIfNeeded() {
+        guard NSApp.windows.isEmpty else {
+            return
+        }
+
+        guard let openWindowAction = storedOpenWindowAction else {
+            pendingInitialWindowRequest = true
+            return
+        }
+
+        openNewWindow(using: openWindowAction)
+    }
+
+    public func openNewWindow(using openWindow: OpenWindowAction) {
+        register(openWindowAction: openWindow)
+        openWindow(id: ClipperWindowIdentifiers.mainWindow)
+    }
+
+    public func requestNewTab(using openWindow: OpenWindowAction) {
+        register(openWindowAction: openWindow)
+
+        guard let parentWindow = currentWindow else {
+            openNewWindow(using: openWindow)
+            return
+        }
+
+        configure(window: parentWindow)
+        pendingTabParent = parentWindow
+        pendingWindowNumbers = Set(NSApp.windows.map(\.windowNumber))
+        pendingTabOpenWindow = { openWindow(id: ClipperWindowIdentifiers.mainWindow) }
+
+        handleNewTabRequest()
+
+        pendingTabTask?.cancel()
+        pendingTabTask = Task { @MainActor [weak self] in
+            for _ in 0..<40 {
+                guard let self else {
+                    return
+                }
+
+                if let parentWindow = self.pendingTabParent,
+                   let candidateWindow = NSApp.windows.first(where: { window in
+                       window !== parentWindow && !self.pendingWindowNumbers.contains(window.windowNumber)
+                   }) {
+                    self.attach(candidateWindow, to: parentWindow)
+                    return
+                }
+
+                try? await Task.sleep(for: .milliseconds(25))
+            }
+
+            self?.clearPendingTabRequest()
+        }
+    }
+
+    public func handleNewTabRequest() {
+        pendingTabOpenWindow?()
+        pendingTabOpenWindow = nil
+    }
+
+    public func register(window: NSWindow) {
+        configure(window: window)
+
+        guard let parentWindow = pendingTabParent, window !== parentWindow else {
+            return
+        }
+
+        attach(window, to: parentWindow)
+    }
+
+    public func configure(window: NSWindow) {
+        if window.tabbingIdentifier != ClipperWindowIdentifiers.tabbingGroup {
+            window.tabbingIdentifier = ClipperWindowIdentifiers.tabbingGroup
+        }
+
+        if window.tabbingMode != .preferred {
+            window.tabbingMode = .preferred
+        }
+    }
+
+    private var currentWindow: NSWindow? {
+        NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first
+    }
+
+    private func attach(_ window: NSWindow, to parentWindow: NSWindow) {
+        guard window !== parentWindow else {
+            clearPendingTabRequest()
+            return
+        }
+
+        configure(window: parentWindow)
+        configure(window: window)
+        parentWindow.addTabbedWindow(window, ordered: .above)
+        parentWindow.makeKeyAndOrderFront(nil)
+        clearPendingTabRequest()
+    }
+
+    private func clearPendingTabRequest() {
+        pendingTabTask?.cancel()
+        pendingTabTask = nil
+        pendingTabParent = nil
+        pendingWindowNumbers.removeAll()
+        pendingTabOpenWindow = nil
+    }
+}
+
+private struct WindowTabConfigurator: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        configure(window: view.window)
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            configure(window: nsView.window)
+        }
+    }
+
+    private func configure(window: NSWindow?) {
+        guard let window else {
+            return
+        }
+
+        ClipperWindowCoordinator.shared.register(window: window)
     }
 }
 

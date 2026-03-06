@@ -11,7 +11,7 @@ final class ClipperUITests: XCTestCase {
         app.launchArguments = ["--ui-test-fixture"]
         app.launch()
 
-        let clipCount = app.staticTexts["clip-count"]
+        let clipCount = app.descendants(matching: .any)["clip-count"]
         XCTAssertTrue(clipCount.waitForExistence(timeout: 2))
         XCTAssertEqual(displayedText(of: clipCount), "2 clips")
 

@@ -35,6 +35,8 @@ Deeper reference material lives in [`docs/architecture.md`](docs/architecture.md
 | `I` | Mark clip start at the current playhead |
 | `O` | Mark clip end and create a clip |
 | `Cmd + O` | Open a source video |
+| `Cmd + N` | Open a new window |
+| `Cmd + T` | Open a new tab in the current window |
 | `Cmd + Z` | Undo the last clip-definition change |
 | `Shift + Cmd + Z` | Redo the last undone clip-definition change |
 
