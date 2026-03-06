@@ -68,10 +68,12 @@ final class AVPlayerPlaybackController: PlaybackControlling {
     private func installPeriodicObserver() {
         let interval = CMTime.clipperSeconds(1.0 / 30.0)
         timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            guard let self else {
-                return
+            Task { @MainActor [weak self] in
+                guard let self else {
+                    return
+                }
+                self.emitSnapshot(currentTime: time, isPlaying: self.player.rate != 0)
             }
-            self.emitSnapshot(currentTime: time, isPlaying: self.player.rate != 0)
         }
     }
 

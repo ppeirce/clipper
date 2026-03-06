@@ -129,6 +129,34 @@ final class ClipperViewModel: ObservableObject {
         return true
     }
 
+    func togglePlaybackFromUI() {
+        togglePlayback()
+    }
+
+    func seekBackwardFromUI() {
+        seek(seconds: -5)
+    }
+
+    func seekForwardFromUI() {
+        seek(seconds: 5)
+    }
+
+    func stepBackwardFromUI() {
+        step(frames: -1)
+    }
+
+    func stepForwardFromUI() {
+        step(frames: 1)
+    }
+
+    func markInFromUI() {
+        markIn()
+    }
+
+    func markOutFromUI() {
+        markOut()
+    }
+
     func selectClip(_ id: UUID?) {
         apply(.selectClip(id))
 
