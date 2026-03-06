@@ -36,6 +36,8 @@ struct ClipperApp: App {
 @MainActor
 final class ClipperAppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        MenuBarCleanup.install()
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(windowDidBecomeKey(_:)),
@@ -64,11 +66,34 @@ final class ClipperAppDelegate: NSObject, NSApplicationDelegate {
 
 @MainActor
 private enum MenuBarCleanup {
+    private static let editMenuTitlesToKeep: Set<String> = ["Undo", "Redo"]
+    private static let sharedDelegate = MenuDelegate()
+    private static var didInstall = false
+    private static var addObserver: NSObjectProtocol?
+
+    static func install() {
+        guard !didInstall else {
+            return
+        }
+
+        didInstall = true
+        addObserver = NotificationCenter.default.addObserver(
+            forName: NSMenu.didAddItemNotification,
+            object: nil,
+            queue: nil
+        ) { _ in
+            DispatchQueue.main.async {
+                apply()
+            }
+        }
+    }
+
     static func apply() {
         guard let mainMenu = NSApp.mainMenu else {
             return
         }
 
+        mainMenu.delegate = sharedDelegate
         pruneEditMenu(in: mainMenu)
         removeTopLevelMenu(titled: "Format", from: mainMenu)
     }
@@ -81,25 +106,42 @@ private enum MenuBarCleanup {
             return
         }
 
-        let replacementMenu = NSMenu(title: existingMenu.title)
-        let retainedItems = existingMenu.items.filter { item in
-            guard !item.isSeparatorItem else {
-                return false
+        existingMenu.delegate = sharedDelegate
+
+        for index in existingMenu.items.indices.reversed() {
+            let item = existingMenu.items[index]
+            guard !shouldKeepEditMenuItem(item) else {
+                continue
             }
-            return item.keyEquivalentModifierMask.contains(.command) &&
-                ["z", "Z"].contains(item.keyEquivalent)
+            existingMenu.removeItem(at: index)
         }
 
-        guard !retainedItems.isEmpty else {
-            return
+        trimSeparators(in: existingMenu)
+    }
+
+    private static func shouldKeepEditMenuItem(_ item: NSMenuItem) -> Bool {
+        guard !item.isSeparatorItem else {
+            return false
         }
 
-        for item in retainedItems {
-            existingMenu.removeItem(item)
-            replacementMenu.addItem(item)
+        guard editMenuTitlesToKeep.contains(item.title) else {
+            return false
         }
 
-        editMenuItem.submenu = replacementMenu
+        return item.keyEquivalentModifierMask.contains(.command) &&
+            ["z", "Z"].contains(item.keyEquivalent)
+    }
+
+    private static func trimSeparators(in menu: NSMenu) {
+        for index in menu.items.indices.reversed() where menu.items[index].isSeparatorItem {
+            let isLeading = index == 0
+            let isTrailing = index == menu.items.count - 1
+            let isDuplicate = !isTrailing && menu.items[index + 1].isSeparatorItem
+
+            if isLeading || isTrailing || isDuplicate {
+                menu.removeItem(at: index)
+            }
+        }
     }
 
     private static func removeTopLevelMenu(titled title: String, from mainMenu: NSMenu) {
@@ -107,5 +149,11 @@ private enum MenuBarCleanup {
             return
         }
         mainMenu.removeItem(at: index)
+    }
+
+    private final class MenuDelegate: NSObject, NSMenuDelegate {
+        func menuWillOpen(_ menu: NSMenu) {
+            apply()
+        }
     }
 }

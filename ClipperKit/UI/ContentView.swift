@@ -890,6 +890,12 @@ public struct ClipperCommands: Commands {
             .disabled(!(viewModel?.canRedoClipChange ?? false))
         }
 
+        CommandGroup(replacing: .pasteboard) {}
+
+        CommandGroup(replacing: .textEditing) {}
+
+        CommandGroup(replacing: .textFormatting) {}
+
         CommandGroup(replacing: .newItem) {
             Button("Open...") {
                 viewModel?.openVideo()
