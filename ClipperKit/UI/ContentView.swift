@@ -11,6 +11,14 @@ public struct ContentView: View {
     @StateObject private var viewModel: ClipperViewModel
     @State private var showsDiagnostics = false
 
+    private var editorState: EditorState {
+        viewModel.state
+    }
+
+    private var assetDuration: CMTime {
+        editorState.asset?.duration ?? .zero
+    }
+
     public init() {
         _viewModel = StateObject(wrappedValue: AppViewModelFactory.make())
     }
@@ -55,39 +63,39 @@ public struct ContentView: View {
     }
 
     private var sourceName: String {
-        viewModel.state.asset?.url.deletingPathExtension().lastPathComponent ?? "No source"
+        editorState.asset?.url.deletingPathExtension().lastPathComponent ?? "No source"
     }
 
     private var currentTimeString: String {
-        TimecodeFormatter.displayString(for: viewModel.state.currentTime)
+        formattedTime(editorState.currentTime)
     }
 
     private var durationString: String {
-        guard let asset = viewModel.state.asset else {
+        guard let asset = editorState.asset else {
             return "--:--:--.---"
         }
-        return TimecodeFormatter.displayString(for: asset.duration)
+        return formattedTime(asset.duration)
     }
 
     private var clipCountLabel: String {
-        let count = viewModel.state.clips.count
+        let count = editorState.clips.count
         return count == 1 ? "1 clip" : "\(count) clips"
     }
 
     private var statusTone: ConsoleStatusTone {
-        if viewModel.state.lastError != nil {
+        if editorState.lastError != nil {
             return .error
         }
         if viewModel.isExporting {
             return .exporting
         }
-        if viewModel.state.pendingInPoint != nil {
+        if editorState.pendingInPoint != nil {
             return .marking
         }
-        if viewModel.state.selectedClip != nil {
+        if editorState.selectedClip != nil {
             return .selection
         }
-        if viewModel.state.asset != nil {
+        if editorState.asset != nil {
             return .ready
         }
         return .idle
@@ -122,38 +130,43 @@ public struct ContentView: View {
     @ViewBuilder
     private func utilityBar(compact: Bool) -> some View {
         if compact {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 10) {
-                    utilityIdentity
-                    Spacer(minLength: 8)
-                    utilityActions
-                }
+            utilityBarPanel {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        utilityIdentity
+                        Spacer(minLength: 8)
+                        utilityActions
+                    }
 
-                HStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        utilitySession
+                        if let utilityStatusDetail {
+                            utilityStatusDetailView(utilityStatusDetail)
+                        }
+                    }
+                }
+            }
+        } else {
+            utilityBarPanel {
+                HStack(spacing: 12) {
+                    utilityIdentity
+                    Spacer(minLength: 12)
                     utilitySession
                     if let utilityStatusDetail {
                         utilityStatusDetailView(utilityStatusDetail)
                     }
+                    Spacer(minLength: 12)
+                    utilityActions
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .consolePanel(radius: 22)
-        } else {
-            HStack(spacing: 12) {
-                utilityIdentity
-                Spacer(minLength: 12)
-                utilitySession
-                if let utilityStatusDetail {
-                    utilityStatusDetailView(utilityStatusDetail)
-                }
-                Spacer(minLength: 12)
-                utilityActions
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .consolePanel(radius: 22)
         }
+    }
+
+    private func utilityBarPanel<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .consolePanel(radius: 22)
     }
 
     private var utilityIdentity: some View {
@@ -175,7 +188,7 @@ public struct ContentView: View {
         HStack(spacing: 8) {
             StatusToken(label: statusShortLabel, tone: statusTone)
             CountBadge(value: clipCountLabel)
-            PresetBadge(label: viewModel.state.exportPreset.displayName)
+            PresetBadge(label: editorState.exportPreset.displayName)
         }
     }
 
@@ -198,7 +211,7 @@ public struct ContentView: View {
 
             Button(viewModel.isExporting ? "Exporting..." : "Export", action: viewModel.exportClips)
                 .buttonStyle(ConsoleButtonStyle(role: .primary, compact: true))
-                .disabled(!viewModel.state.canExport || viewModel.isExporting)
+                .disabled(!editorState.canExport || viewModel.isExporting)
                 .accessibilityIdentifier("export-clips")
         }
     }
@@ -217,36 +230,40 @@ public struct ContentView: View {
                         .padding(12)
                 }
 
-            CompactRail(
-                currentTime: currentTimeString,
-                duration: durationString,
-                isPlaying: viewModel.state.isPlaying,
-                durationTime: viewModel.state.asset?.duration ?? .zero,
-                currentTimeValue: viewModel.state.currentTime,
-                clips: viewModel.state.clips,
-                selectedClipID: viewModel.state.selectedClipID,
-                pendingInPoint: viewModel.state.pendingInPoint,
-                selectedClip: viewModel.state.selectedClip,
-                selectedClipIndex: viewModel.state.selectedClipIndex,
-                onPlayPause: viewModel.togglePlaybackFromUI,
-                onSeekBackward: viewModel.seekBackwardFromUI,
-                onSeekForward: viewModel.seekForwardFromUI,
-                onStepBackward: viewModel.stepBackwardFromUI,
-                onStepForward: viewModel.stepForwardFromUI,
-                onMarkIn: viewModel.markInFromUI,
-                onMarkOut: viewModel.markOutFromUI,
-                onSelectClip: viewModel.selectClip,
-                onScrub: viewModel.scrubToTimeFromUI,
-                onScrubEnd: viewModel.commitScrubToTimeFromUI,
-                onSetSelectedStart: { viewModel.setSelectedClipBoundary(.start) },
-                onSetSelectedEnd: { viewModel.setSelectedClipBoundary(.end) },
-                onDeleteSelectedClip: viewModel.deleteSelectedClip
-            )
-            .fixedSize(horizontal: false, vertical: true)
+            compactRail
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .clipShape(Rectangle())
         .consolePanel(radius: 0)
+    }
+
+    private var compactRail: some View {
+        CompactRail(
+            currentTime: currentTimeString,
+            duration: durationString,
+            isPlaying: editorState.isPlaying,
+            durationTime: assetDuration,
+            currentTimeValue: editorState.currentTime,
+            clips: editorState.clips,
+            selectedClipID: editorState.selectedClipID,
+            pendingInPoint: editorState.pendingInPoint,
+            selectedClip: editorState.selectedClip,
+            selectedClipIndex: editorState.selectedClipIndex,
+            onPlayPause: viewModel.togglePlaybackFromUI,
+            onSeekBackward: viewModel.seekBackwardFromUI,
+            onSeekForward: viewModel.seekForwardFromUI,
+            onStepBackward: viewModel.stepBackwardFromUI,
+            onStepForward: viewModel.stepForwardFromUI,
+            onMarkIn: viewModel.markInFromUI,
+            onMarkOut: viewModel.markOutFromUI,
+            onSelectClip: viewModel.selectClip,
+            onScrub: viewModel.scrubToTimeFromUI,
+            onScrubEnd: viewModel.commitScrubToTimeFromUI,
+            onSetSelectedStart: { viewModel.setSelectedClipBoundary(.start) },
+            onSetSelectedEnd: { viewModel.setSelectedClipBoundary(.end) },
+            onDeleteSelectedClip: viewModel.deleteSelectedClip
+        )
     }
 
     private var playerOverlay: some View {
@@ -254,9 +271,9 @@ public struct ContentView: View {
             OverlayBadge(label: currentTimeString, emphasis: ConsolePalette.playhead)
             OverlayBadge(label: durationString, emphasis: ConsolePalette.highlight)
 
-            if let pendingInPoint = viewModel.state.pendingInPoint {
+            if let pendingInPoint = editorState.pendingInPoint {
                 OverlayBadge(
-                    label: "IN \(TimecodeFormatter.displayString(for: pendingInPoint))",
+                    label: "IN \(formattedTime(pendingInPoint))",
                     emphasis: ConsolePalette.pending
                 )
             }
@@ -284,28 +301,38 @@ public struct ContentView: View {
                 .buttonStyle(ConsoleButtonStyle(role: .secondary, compact: true))
             }
 
-            if viewModel.recentTraceEvents.isEmpty {
-                Text("No trace events yet.")
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(ConsolePalette.textMuted)
-            } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(Array(viewModel.recentTraceEvents.suffix(6).reversed())) { event in
-                        Text(event.displayLine)
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundStyle(ConsolePalette.textMuted)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-            }
+            diagnosticsTraceList
         }
         .padding(14)
         .consolePanel(radius: 22)
+    }
+
+    @ViewBuilder
+    private var diagnosticsTraceList: some View {
+        if viewModel.recentTraceEvents.isEmpty {
+            Text("No trace events yet.")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(ConsolePalette.textMuted)
+        } else {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array(viewModel.recentTraceEvents.suffix(6).reversed())) { event in
+                    Text(event.displayLine)
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .foregroundStyle(ConsolePalette.textMuted)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+    }
+
+    private func formattedTime(_ time: CMTime) -> String {
+        TimecodeFormatter.displayString(for: time)
     }
 }
 
 private struct CompactRail: View {
     private let detailRowHeight: CGFloat = 38
+    private let horizontalPadding: CGFloat = 14
 
     let currentTime: String
     let duration: String
@@ -345,39 +372,13 @@ private struct CompactRail: View {
             )
 
             TimelineScaleStrip(duration: durationTime)
-                .padding(.horizontal, 14)
+                .padding(.horizontal, horizontalPadding)
 
-            HStack(spacing: 8) {
-                RailButton(label: "-1f", action: onStepBackward)
-                RailButton(label: "-5s", action: onSeekBackward)
-                RailButton(label: isPlaying ? "Pause" : "Play", role: .primary, action: onPlayPause)
-                RailButton(label: "+5s", action: onSeekForward)
-                RailButton(label: "+1f", action: onStepForward)
-
-                Spacer(minLength: 8)
-
-                Text(currentTime)
-                    .font(.system(size: 17, weight: .bold, design: .monospaced))
-                    .foregroundStyle(ConsolePalette.textPrimary)
-
-                Text("/")
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(ConsolePalette.textSubtle)
-
-                Text(duration)
-                    .font(.system(size: 13, weight: .medium, design: .monospaced))
-                    .foregroundStyle(ConsolePalette.textMuted)
-
-                Spacer(minLength: 8)
-
-                RailButton(label: "I", role: pendingInPoint == nil ? .secondary : .accent, action: onMarkIn)
-                RailButton(label: "O", role: .primary, action: onMarkOut)
-            }
-            .padding(.horizontal, 14)
+            transportRow
 
             detailRow
                 .frame(maxWidth: .infinity, minHeight: detailRowHeight, maxHeight: detailRowHeight, alignment: .leading)
-                .padding(.horizontal, 14)
+                .padding(.horizontal, horizontalPadding)
         }
         .padding(.vertical, 12)
         .background(
@@ -395,6 +396,40 @@ private struct CompactRail: View {
             Rectangle()
                 .fill(Color.white.opacity(0.05))
                 .frame(height: 1)
+        }
+    }
+
+    private var transportRow: some View {
+        HStack(spacing: 8) {
+            RailButton(label: "-1f", action: onStepBackward)
+            RailButton(label: "-5s", action: onSeekBackward)
+            RailButton(label: isPlaying ? "Pause" : "Play", role: .primary, action: onPlayPause)
+            RailButton(label: "+5s", action: onSeekForward)
+            RailButton(label: "+1f", action: onStepForward)
+
+            Spacer(minLength: 8)
+            timecodeDisplay
+            Spacer(minLength: 8)
+
+            RailButton(label: "I", role: pendingInPoint == nil ? .secondary : .accent, action: onMarkIn)
+            RailButton(label: "O", role: .primary, action: onMarkOut)
+        }
+        .padding(.horizontal, horizontalPadding)
+    }
+
+    private var timecodeDisplay: some View {
+        HStack(spacing: 6) {
+            Text(currentTime)
+                .font(.system(size: 17, weight: .bold, design: .monospaced))
+                .foregroundStyle(ConsolePalette.textPrimary)
+
+            Text("/")
+                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .foregroundStyle(ConsolePalette.textSubtle)
+
+            Text(duration)
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .foregroundStyle(ConsolePalette.textMuted)
         }
     }
 
@@ -418,7 +453,7 @@ private struct CompactRail: View {
         } else if let pendingInPoint {
             HStack(spacing: 8) {
                 PendingBadge(
-                    start: TimecodeFormatter.displayString(for: pendingInPoint),
+                    start: formattedTime(pendingInPoint),
                     end: currentTime
                 )
                 Spacer(minLength: 0)
@@ -428,6 +463,10 @@ private struct CompactRail: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityHidden(true)
         }
+    }
+
+    private func formattedTime(_ time: CMTime) -> String {
+        TimecodeFormatter.displayString(for: time)
     }
 }
 
@@ -873,6 +912,22 @@ public struct ClipperCommands: Commands {
 
     public init() {}
 
+    private var canUndoClipChange: Bool {
+        viewModel?.canUndoClipChange ?? false
+    }
+
+    private var canRedoClipChange: Bool {
+        viewModel?.canRedoClipChange ?? false
+    }
+
+    private var recentVideoURLs: [URL] {
+        viewModel?.recentVideoURLs ?? []
+    }
+
+    private var canClearClips: Bool {
+        !(viewModel?.state.clips.isEmpty ?? true)
+    }
+
     public var body: some Commands {
         let _ = ClipperWindowCoordinator.shared.register(openWindowAction: openWindow)
 
@@ -881,13 +936,13 @@ public struct ClipperCommands: Commands {
                 viewModel?.undoClipChange()
             }
             .keyboardShortcut("z", modifiers: [.command])
-            .disabled(!(viewModel?.canUndoClipChange ?? false))
+            .disabled(!canUndoClipChange)
 
             Button("Redo") {
                 viewModel?.redoClipChange()
             }
             .keyboardShortcut("Z", modifiers: [.command, .shift])
-            .disabled(!(viewModel?.canRedoClipChange ?? false))
+            .disabled(!canRedoClipChange)
         }
 
         CommandGroup(replacing: .pasteboard) {}
@@ -904,8 +959,8 @@ public struct ClipperCommands: Commands {
             .disabled(viewModel == nil)
 
             Menu("Open Recent") {
-                if let viewModel, !viewModel.recentVideoURLs.isEmpty {
-                    ForEach(viewModel.recentVideoURLs, id: \.self) { url in
+                if let viewModel, !recentVideoURLs.isEmpty {
+                    ForEach(recentVideoURLs, id: \.self) { url in
                         Button(url.lastPathComponent) {
                             viewModel.openVideo(at: url)
                         }
@@ -921,7 +976,7 @@ public struct ClipperCommands: Commands {
                         .disabled(true)
                 }
             }
-            .disabled(viewModel?.recentVideoURLs.isEmpty ?? true)
+            .disabled(recentVideoURLs.isEmpty)
 
             Divider()
 
@@ -946,7 +1001,7 @@ public struct ClipperCommands: Commands {
             Button("Clear Clips") {
                 viewModel?.clearClips()
             }
-            .disabled(viewModel?.state.clips.isEmpty ?? true)
+            .disabled(!canClearClips)
         }
 
         CommandGroup(after: .toolbar) {
@@ -967,9 +1022,7 @@ public struct ClipperCommands: Commands {
     private var diagnosticsSelection: Binding<Bool> {
         Binding(
             get: { showsDiagnostics ?? false },
-            set: { isShown in
-                showsDiagnostics = isShown
-            }
+            set: { showsDiagnostics = $0 }
         )
     }
 }
@@ -1110,9 +1163,7 @@ public final class ClipperWindowCoordinator {
 
 private struct WindowTabConfigurator: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
-        let view = NSView(frame: .zero)
-        configure(window: view.window)
-        return view
+        NSView(frame: .zero)
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
